@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Rocket } from "lucide-react";
 import { toast } from "sonner";
+import { API_URL } from "@/lib/utils";
 
 export default function SetupPage() {
 	const router = useRouter();
@@ -31,7 +32,7 @@ export default function SetupPage() {
 	useEffect(() => {
 		const checkStatus = async () => {
 			try {
-				const res = await fetch("http://localhost:3000/api/setup/status");
+				const res = await fetch(`${API_URL}/api/setup/status`);
 				const data = await res.json();
 
 				if (data.isSetup) {
@@ -57,7 +58,7 @@ export default function SetupPage() {
 		setLoading(true);
 
 		try {
-			const res = await fetch("http://localhost:3000/api/setup/run", {
+			const res = await fetch(`${API_URL}/api/setup/run`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({

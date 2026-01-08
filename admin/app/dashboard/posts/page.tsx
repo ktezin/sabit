@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2 } from "lucide-react";
+import { API_URL } from "@/lib/utils";
 
 interface Post {
 	id: string;
@@ -37,7 +38,7 @@ export default function PostsPage() {
 	useEffect(() => {
 		const fetchPosts = async () => {
 			const token = localStorage.getItem("token");
-			const res = await fetch("http://localhost:3000/api/admin/posts", {
+			const res = await fetch(`${API_URL}/api/admin/posts`, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
 			const json = await res.json();
@@ -55,7 +56,7 @@ export default function PostsPage() {
 
 		try {
 			const token = localStorage.getItem("token");
-			const res = await fetch(`http://localhost:3000/api/admin/posts/${id}`, {
+			const res = await fetch(`${API_URL}/api/admin/posts/${id}`, {
 				method: "DELETE",
 				headers: { Authorization: `Bearer ${token}` },
 			});

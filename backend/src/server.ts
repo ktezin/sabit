@@ -7,7 +7,12 @@ import prisma from "./config/db";
 const PORT = process.env.PORT || 3000;
 
 const server = app.listen(PORT, async () => {
-	console.log(`Server running on http://localhost:${PORT}`);
+	console.log(`Server running on port ${PORT}`);
+	console.log(
+		`Frontend expected at: ${
+			process.env.FRONTEND_URL || "http://localhost:3001"
+		}`
+	);
 
 	try {
 		await prisma.$connect();

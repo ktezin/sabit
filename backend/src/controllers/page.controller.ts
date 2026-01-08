@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import path from "path";
 import fs from "fs";
+import fsAsync from "fs/promises";
 import prisma from "../config/db";
 import { BuildService } from "../services/build.service";
 import { AppError } from "../utils/AppError";
@@ -19,7 +20,17 @@ export class PageController {
 					"defaults",
 					"not-installed.html"
 				);
-				return res.sendFile(notInstalledPath);
+
+				let htmlContent = await fsAsync.readFile(notInstalledPath, "utf-8");
+
+				const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3001";
+
+				htmlContent = htmlContent.replace(
+					"{{ setupUrl }}",
+					`${frontendUrl}/setup`
+				);
+
+				return res.send(htmlContent);
 			}
 
 			const { slug } = req.params;

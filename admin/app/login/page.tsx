@@ -14,6 +14,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Lock } from "lucide-react";
+import { API_URL } from "@/lib/utils";
 
 export default function LoginPage() {
 	const router = useRouter();
@@ -28,7 +29,7 @@ export default function LoginPage() {
 		setError("");
 
 		try {
-			const res = await fetch("http://localhost:3000/api/auth/login", {
+			const res = await fetch(`${API_URL}/api/auth/login`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ email, password }),
@@ -37,7 +38,6 @@ export default function LoginPage() {
 			const data = await res.json();
 
 			if (!res.ok) {
-				// Backend'den mesaj gelmezse varsayılan olarak "Login failed" gösterilecek
 				throw new Error(data.message || "Login failed");
 			}
 

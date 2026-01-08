@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import Editor from "@monaco-editor/react";
+import { API_URL } from "@/lib/utils";
 
 interface SettingsState {
 	siteTitle: string;
@@ -72,8 +73,8 @@ export default function SettingsPage() {
 			};
 
 			const [settingsRes, templatesRes] = await Promise.all([
-				fetch("http://localhost:3000/api/admin/settings", { headers }),
-				fetch("http://localhost:3000/api/admin/templates", { headers }),
+				fetch(`${API_URL}/api/admin/settings`, { headers }),
+				fetch(`${API_URL}/api/admin/templates`, { headers }),
 			]);
 
 			if (settingsRes.status === 401 || templatesRes.status === 401) {
@@ -118,7 +119,7 @@ export default function SettingsPage() {
 
 		setLoading(true);
 		try {
-			const res = await fetch("http://localhost:3000/api/admin/settings", {
+			const res = await fetch(`${API_URL}/api/admin/settings`, {
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
@@ -156,7 +157,7 @@ export default function SettingsPage() {
 		setLoading(true);
 		try {
 			const res = await fetch(
-				`http://localhost:3000/api/admin/templates/${selectedTemplateType}`,
+				`${API_URL}/api/admin/templates/${selectedTemplateType}`,
 				{
 					method: "PUT",
 					headers: {
@@ -190,7 +191,7 @@ export default function SettingsPage() {
 
 		setBuildLoading(true);
 		try {
-			const res = await fetch("http://localhost:3000/api/admin/build", {
+			const res = await fetch(`${API_URL}/api/admin/build`, {
 				method: "POST",
 				headers: {
 					Authorization: `Bearer ${token}`,

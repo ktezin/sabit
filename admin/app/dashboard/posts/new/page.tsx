@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"; // If not installed: npx shadcn@l
 import { Switch } from "@/components/ui/switch"; // If not installed: npx shadcn@latest add switch
 import { ArrowLeft, Save } from "lucide-react";
 import Editor from "@/components/editor";
+import { API_URL } from "@/lib/utils";
 
 export default function NewPostPage() {
 	const router = useRouter();
@@ -25,7 +26,7 @@ export default function NewPostPage() {
 
 		try {
 			const token = localStorage.getItem("token");
-			const res = await fetch("http://localhost:3000/api/admin/posts", {
+			const res = await fetch(`${API_URL}/api/admin/posts`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

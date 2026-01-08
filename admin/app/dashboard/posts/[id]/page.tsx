@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Save } from "lucide-react";
 import Editor from "@/components/editor";
+import { API_URL } from "@/lib/utils";
 
 export default function EditPostPage() {
 	const router = useRouter();
@@ -29,12 +30,9 @@ export default function EditPostPage() {
 		const fetchPost = async () => {
 			const token = localStorage.getItem("token");
 
-			const res = await fetch(
-				`http://localhost:3000/api/admin/posts/${postId}`,
-				{
-					headers: { Authorization: `Bearer ${token}` },
-				}
-			);
+			const res = await fetch(`${API_URL}/api/admin/posts/${postId}`, {
+				headers: { Authorization: `Bearer ${token}` },
+			});
 
 			if (res.ok) {
 				const json = await res.json();
@@ -57,17 +55,14 @@ export default function EditPostPage() {
 
 		try {
 			const token = localStorage.getItem("token");
-			const res = await fetch(
-				`http://localhost:3000/api/admin/posts/${postId}`,
-				{
-					method: "PUT",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`,
-					},
-					body: JSON.stringify(formData),
-				}
-			);
+			const res = await fetch(`${API_URL}/api/admin/posts/${postId}`, {
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify(formData),
+			});
 
 			if (!res.ok) throw new Error("Update failed");
 

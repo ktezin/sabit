@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+model Settings {
+  id          String   @id @default("global")
+  siteName    String   @default("My Awesome Blog")
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+model Template {
+  id        String   @id @default(uuid())
+  name      String   
+  content   String   
+  type      String   @unique
+  
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  title     String
+  slug      String   @unique
+  content   String   
+  published Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

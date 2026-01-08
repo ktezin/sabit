@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 import prisma from "../config/db";
 import { BuildService } from "../services/build.service";
-import { AppError } from "../utils/AppError"; // Assuming you have this
+import { AppError } from "../utils/AppError";
 import { catchAsync } from "../utils/catchAsync";
 
 const buildService = new BuildService();
@@ -13,32 +13,32 @@ export class PageController {
 		async (req: Request, res: Response, next: NextFunction) => {
 			const { slug } = req.params;
 
-			const fileName = slug ? `${slug}.html` : "index.html";
+			const fileName = !slug ? "index.html" : `${slug}.html`;
 			const filePath = path.join(process.cwd(), "dist", fileName);
 
-			// Incremental Static Regeneration
-			// Check if file exists on disk
 			if (fs.existsSync(filePath)) {
-				console.log(`Cache Hit: ${fileName}`);
 				return res.sendFile(filePath);
 			}
 
 			console.log(`Cache Miss: ${fileName} (Generating...)`);
 
-			const settings = await prisma.settings.findUnique({
-				where: { id: "global" },
-			});
-			const siteName = settings?.siteName || "My Blog";
+			const settings = await prisma.settings.findFirst();
+
+			const globalData = {
+				siteName: settings?.siteTitle || "My Blog",
+				siteDescription: settings?.siteDescription,
+				footerText: settings?.footerText,
+			};
 
 			let html = "";
 
 			if (!slug) {
-				// Homepage
 				const template = await prisma.template.findUnique({
 					where: { type: "index" },
 				});
+
 				if (!template)
-					return next(new AppError("Homepage template missing", 500));
+					return next(new AppError("Homepage template missing in DB", 500));
 
 				const posts = await prisma.post.findMany({
 					where: { published: true },
@@ -46,24 +46,25 @@ export class PageController {
 				});
 
 				html = await buildService.generatePage("/", template.content, {
-					siteName,
+					...globalData,
 					posts,
-					generatedAt: new Date().toLocaleString(),
 				});
 			} else {
-				// Posts
+				console.log(slug)
+				const post = await prisma.post.findUnique({ where: { slug } });
+
+				if (!post) return next(new AppError("Page not found", 404));
+
 				const template = await prisma.template.findUnique({
 					where: { type: "post" },
 				});
-				if (!template) return next(new AppError("Post template missing", 500));
 
-				const post = await prisma.post.findUnique({ where: { slug } });
-				if (!post) return next(new AppError("Post not found", 404));
+				if (!template)
+					return next(new AppError("Post template missing in DB", 500));
 
 				html = await buildService.generatePage(slug, template.content, {
-					siteName,
+					...globalData,
 					post,
-					generatedAt: new Date().toLocaleString(),
 				});
 			}
 

@@ -4,41 +4,96 @@ import fs from "fs/promises";
 import prisma from "../config/db";
 import { AppError } from "../utils/AppError";
 import { catchAsync } from "../utils/catchAsync";
+import { BuildService } from "../services/build.service";
+
+const buildService = new BuildService();
+
+export const getTemplates = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const templates = await prisma.template.findMany();
+
+		res.status(200).json({
+			status: "success",
+			data: { templates },
+		});
+	}
+);
 
 export const updateTemplate = catchAsync(
 	async (req: Request, res: Response, next: NextFunction) => {
-		const { siteId, templateType } = req.params;
+		const { templateType } = req.params;
 		const { content } = req.body;
 
-		const updateResult = await prisma.template.updateMany({
-			where: {
-				type: templateType,
-			},
-			data: {
-				content: content,
-			},
+		const updateResult = await prisma.template.update({
+			where: { type: templateType },
+			data: { content: content },
 		});
 
-		if (updateResult.count === 0) {
-			return next(
-				new AppError(
-					"No templates matching the specified criteria were found.",
-					404
-				)
-			);
+		if (!updateResult) {
+			return next(new AppError("Template not found.", 404));
 		}
 
 		if (templateType === "index") {
-			const sitePath = path.join(process.cwd(), "sites", siteId);
-			const filePath = path.join(sitePath, "index.html");
-
-			await fs.unlink(filePath).catch(() => null);
+			const filePath = path.join(process.cwd(), "dist", "index.html");
+			await fs
+				.unlink(filePath)
+				.catch(() => console.log("Cache file not found, skipping delete."));
 		}
 
 		res.status(200).json({
 			status: "success",
-			message:
-				"The template has been successfully updated and the cache cleared.",
+			message: "Template updated and cache cleared.",
+			data: updateResult,
+		});
+	}
+);
+
+export const triggerBuild = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const result = await buildService.buildAll();
+
+		res.status(200).json({
+			status: "success",
+			message: "Site build completed successfully.",
+			data: result,
+		});
+	}
+);
+
+export const getSettings = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const settings = await prisma.settings.findFirst();
+
+		res.status(200).json({
+			status: "success",
+			data: settings || {},
+		});
+	}
+);
+
+export const updateSettings = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const { siteTitle, siteDescription, footerText, activeTheme } = req.body;
+
+		const settings = await prisma.settings.upsert({
+			where: { id: 1 },
+			update: {
+				siteTitle,
+				siteDescription,
+				footerText,
+				activeTheme,
+			},
+			create: {
+				siteTitle,
+				siteDescription,
+				footerText,
+				activeTheme,
+			},
+		});
+
+		res.status(200).json({
+			status: "success",
+			data: settings,
 		});
 	}
 );

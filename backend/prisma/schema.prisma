@@ -15,10 +15,12 @@ model User {
 }
 
 model Settings {
-  id          String   @id @default("global")
-  siteName    String   @default("My Awesome Blog")
-  description String?
-  updatedAt   DateTime @updatedAt
+  id              Int      @id @default(autoincrement()) 
+  siteTitle       String   @default("Benim Blogum")
+  siteDescription String?  @db.Text
+  footerText      String?
+  activeTheme     String   @default("default")
+  updatedAt       DateTime @updatedAt
 }
 
 model Template {

@@ -17,6 +17,13 @@ const slugify = (text: string) => {
 		.replace(/-+/g, "-");
 };
 
+const clearIndexCache = async () => {
+	const indexPath = path.join(process.cwd(), "dist", "index.html");
+	// Dosya varsa sil, yoksa hata verme (catch null)
+	await fs.unlink(indexPath).catch(() => null);
+	console.log("Index cache cleared.");
+};
+
 export const createPost = catchAsync(async (req, res, next) => {
 	const { title, content, published } = req.body;
 
@@ -36,11 +43,13 @@ export const createPost = catchAsync(async (req, res, next) => {
 		},
 	});
 
+	await clearIndexCache();
+
 	res.status(201).json({ status: "success", data: post });
 });
 
 export const updatePost = catchAsync(async (req, res, next) => {
-	const { siteId, postId } = req.params;
+	const { postId } = req.params;
 
 	const post = await prisma.post
 		.update({
@@ -51,15 +60,60 @@ export const updatePost = catchAsync(async (req, res, next) => {
 
 	if (!post) return next(new AppError("Post not found", 404));
 
-	const filePath = path.join(
-		process.cwd(),
-		"sites",
-		siteId,
-		`${post.slug}.html`
-	);
+	const filePath = path.join(process.cwd(), "dist", `${post.slug}.html`);
 	await fs.unlink(filePath).catch(() => null);
+
+	await clearIndexCache();
 
 	console.log(`Post cache cleaned: ${post.slug}`);
 
 	res.status(200).json({ status: "success", data: post });
+});
+
+export const getPosts = catchAsync(async (req, res, next) => {
+	const posts = await prisma.post.findMany({
+		orderBy: { createdAt: "desc" },
+	});
+
+	res.status(200).json({
+		status: "success",
+		results: posts.length,
+		data: posts,
+	});
+});
+
+export const getPostById = catchAsync(async (req, res, next) => {
+	const { postId } = req.params;
+	const post = await prisma.post.findUnique({ where: { id: postId } });
+
+	if (!post) return next(new AppError("Post not found", 404));
+
+	res.status(200).json({
+		status: "success",
+		data: post,
+	});
+});
+
+export const deletePost = catchAsync(async (req, res, next) => {
+	const { postId } = req.params;
+
+	const post = await prisma.post.findUnique({ where: { id: postId } });
+
+	if (!post) {
+		return next(new AppError("Post not found", 404));
+	}
+
+	await prisma.post.delete({ where: { id: postId } });
+
+	const filePath = path.join(process.cwd(), "dist", `${post.slug}.html`);
+	await fs
+		.unlink(filePath)
+		.catch(() => console.log("There is no file to delete"));
+
+	await clearIndexCache();
+
+	res.status(204).json({
+		status: "success",
+		data: null,
+	});
 });

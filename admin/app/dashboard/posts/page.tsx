@@ -2,17 +2,22 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+	Plus,
+	Search,
+	Edit,
+	Trash2,
+	CheckCircle,
+	XCircle,
+	ChevronLeft,
+	ChevronRight,
+	Eye,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
 import { API_URL } from "@/lib/utils";
 
 interface Post {
@@ -23,129 +28,241 @@ interface Post {
 	createdAt: string;
 }
 
-interface Post {
-	id: string;
-	title: string;
-	slug: string;
-	published: boolean;
-	createdAt: string;
+interface Pagination {
+	page: number;
+	totalPages: number;
+	totalPosts: number;
 }
 
 export default function PostsPage() {
+	const router = useRouter();
 	const [posts, setPosts] = useState<Post[]>([]);
 	const [loading, setLoading] = useState(true);
 
-	useEffect(() => {
-		const fetchPosts = async () => {
-			const token = localStorage.getItem("token");
-			const res = await fetch(`${API_URL}/api/admin/posts`, {
-				headers: { Authorization: `Bearer ${token}` },
-			});
-			const json = await res.json();
-			if (json.status === "success") {
-				setPosts(json.data);
-			}
-			setLoading(false);
-		};
+	const [search, setSearch] = useState("");
+	const [page, setPage] = useState(1);
+	const [pagination, setPagination] = useState<Pagination>({
+		page: 1,
+		totalPages: 1,
+		totalPosts: 0,
+	});
 
-		fetchPosts();
-	}, []);
+	useEffect(() => {
+		const token = localStorage.getItem("token");
+		if (!token) {
+			router.push("/login");
+			return;
+		}
+		fetchPosts(token);
+	}, [page, search]);
+
+	const fetchPosts = async (token: string) => {
+		setLoading(true);
+		try {
+			const res = await fetch(
+				`${API_URL}/api/admin/posts?page=${page}&limit=10&search=${search}`,
+				{
+					headers: { Authorization: `Bearer ${token}` },
+				}
+			);
+
+			if (res.status === 401) {
+				localStorage.removeItem("token");
+				router.push("/login");
+				return;
+			}
+
+			const data = await res.json();
+			if (data.status === "success") {
+				setPosts(data.data.posts);
+				setPagination(data.data.pagination);
+			}
+		} catch (error) {
+			toast.error("An error occurred while loading posts.");
+		} finally {
+			setLoading(false);
+		}
+	};
 
 	const handleDelete = async (id: string) => {
 		if (!confirm("Are you sure you want to delete this post?")) return;
 
+		const token = localStorage.getItem("token");
 		try {
-			const token = localStorage.getItem("token");
 			const res = await fetch(`${API_URL}/api/admin/posts/${id}`, {
 				method: "DELETE",
 				headers: { Authorization: `Bearer ${token}` },
 			});
 
 			if (res.ok) {
-				setPosts((prev) => prev.filter((post) => post.id !== id));
+				toast.success("Post deleted.");
+				fetchPosts(token!);
 			} else {
-				alert("Delete operation failed.");
+				toast.error("Delete operation failed.");
 			}
 		} catch (error) {
-			console.error(error);
-			alert("An error occurred.");
+			toast.error("An error occurred.");
 		}
 	};
 
-	if (loading) return <div className="p-4">Loading...</div>;
-
 	return (
 		<div className="space-y-6">
-			<div className="flex items-center justify-between">
-				<h2 className="text-3xl font-bold tracking-tight">Posts</h2>
+			<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+				<div>
+					<h2 className="text-3xl font-bold tracking-tight">Posts</h2>
+					<p className="text-muted-foreground">
+						Manage, edit, or delete blog posts.
+					</p>
+				</div>
 				<Link href="/dashboard/posts/new">
-					<Button>
+					<Button className="bg-blue-600 hover:bg-blue-700">
 						<Plus className="mr-2 h-4 w-4" /> Add New Post
 					</Button>
 				</Link>
 			</div>
 
-			<div className="border rounded-md">
-				<Table>
-					<TableHeader>
-						<TableRow>
-							<TableHead>Title</TableHead>
-							<TableHead>Slug</TableHead>
-							<TableHead>Status</TableHead>
-							<TableHead>Date</TableHead>
-							<TableHead className="text-right">Actions</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{posts.length === 0 ? (
-							<TableRow>
-								<TableCell
-									colSpan={5}
-									className="text-center h-24 text-muted-foreground"
-								>
-									No posts found yet.
-								</TableCell>
-							</TableRow>
-						) : (
-							posts.map((post) => (
-								<TableRow key={post.id}>
-									<TableCell className="font-medium">{post.title}</TableCell>
-									<TableCell className="text-muted-foreground">
-										{post.slug}
-									</TableCell>
-									<TableCell>
-										<Badge variant={post.published ? "default" : "secondary"}>
-											{post.published ? "Published" : "Draft"}
-										</Badge>
-									</TableCell>
-									<TableCell>
-										{new Date(post.createdAt).toLocaleDateString("en-US")}
-									</TableCell>
-									<TableCell className="text-right">
-										<Link href={`/dashboard/posts/${post.id}`}>
-											<Button
-												variant="ghost"
-												size="icon"
-												className="hover:bg-slate-300"
-											>
-												<Pencil className="h-4 w-4" />
-											</Button>
-										</Link>
-										<Button
-											variant="ghost"
-											size="icon"
-											className="text-red-500 hover:text-red-600 hover:bg-slate-300"
-											onClick={() => handleDelete(post.id)}
+			<Card>
+				<CardHeader className="pb-3">
+					<div className="flex items-center justify-between">
+						<CardTitle>Post List</CardTitle>
+						<div className="relative w-full max-w-sm">
+							<Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+							<Input
+								type="search"
+								placeholder="Search by title..."
+								className="pl-8"
+								value={search}
+								onChange={(e) => {
+									setSearch(e.target.value);
+									setPage(1);
+								}}
+							/>
+						</div>
+					</div>
+				</CardHeader>
+				<CardContent>
+					{loading ? (
+						<div className="text-center py-10">Loading...</div>
+					) : posts.length === 0 ? (
+						<div className="text-center py-10 text-muted-foreground">
+							{search
+								? "No posts found matching your criteria."
+								: "No posts added yet."}
+						</div>
+					) : (
+						<div className="relative w-full overflow-auto">
+							<table className="w-full caption-bottom text-sm text-left">
+								<thead className="[&_tr]:border-b">
+									<tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+										<th className="h-12 px-4 align-middle font-medium text-muted-foreground">
+											Title
+										</th>
+										<th className="h-12 px-4 align-middle font-medium text-muted-foreground">
+											Status
+										</th>
+										<th className="h-12 px-4 align-middle font-medium text-muted-foreground">
+											Date
+										</th>
+										<th className="h-12 px-4 align-middle font-medium text-muted-foreground text-right">
+											Actions
+										</th>
+									</tr>
+								</thead>
+								<tbody className="[&_tr:last-child]:border-0">
+									{posts.map((post) => (
+										<tr
+											key={post.id}
+											className="border-b transition-colors hover:bg-muted/50"
 										>
-											<Trash2 className="h-4 w-4" />
-										</Button>
-									</TableCell>
-								</TableRow>
-							))
-						)}
-					</TableBody>
-				</Table>
-			</div>
+											<td className="p-4 align-middle font-medium">
+												<div className="flex flex-col">
+													<span>{post.title}</span>
+													<span className="text-xs text-muted-foreground font-normal">
+														/{post.slug}
+													</span>
+												</div>
+											</td>
+											<td className="p-4 align-middle">
+												{post.published ? (
+													<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+														<CheckCircle className="w-3 h-3 mr-1" /> Published
+													</span>
+												) : (
+													<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+														<XCircle className="w-3 h-3 mr-1" /> Draft
+													</span>
+												)}
+											</td>
+											<td className="p-4 align-middle">
+												{new Date(post.createdAt).toLocaleDateString("en-US")}
+											</td>
+											<td className="p-4 align-middle text-right">
+												<div className="flex justify-end gap-2">
+													<Link
+														href={`${API_URL}/${post.slug}`}
+														target="_blank"
+													>
+														<Button
+															variant="outline"
+															size="icon"
+															className="h-8 w-8"
+														>
+															<Eye className="h-4 w-4" />
+														</Button>
+													</Link>
+													<Link href={`/dashboard/posts/${post.id}`}>
+														<Button
+															variant="outline"
+															size="icon"
+															className="h-8 w-8"
+														>
+															<Edit className="h-4 w-4" />
+														</Button>
+													</Link>
+													<Button
+														variant="destructive"
+														size="icon"
+														className="h-8 w-8"
+														onClick={() => handleDelete(post.id)}
+													>
+														<Trash2 className="h-4 w-4" />
+													</Button>
+												</div>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					)}
+
+					{pagination.totalPages > 1 && (
+						<div className="flex items-center justify-end space-x-2 py-4">
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => setPage((p) => Math.max(1, p - 1))}
+								disabled={page === 1}
+							>
+								<ChevronLeft className="h-4 w-4 mr-1" /> Previous
+							</Button>
+							<div className="text-sm text-muted-foreground">
+								Page {pagination.page} / {pagination.totalPages}
+							</div>
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() =>
+									setPage((p) => Math.min(pagination.totalPages, p + 1))
+								}
+								disabled={page === pagination.totalPages}
+							>
+								Next <ChevronRight className="h-4 w-4 ml-1" />
+							</Button>
+						</div>
+					)}
+				</CardContent>
+			</Card>
 		</div>
 	);
 }

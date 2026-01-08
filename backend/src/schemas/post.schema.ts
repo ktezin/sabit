@@ -20,3 +20,20 @@ export const updatePostSchema = z.object({
 		published: z.boolean().optional(),
 	}),
 });
+
+export const postQuerySchema = z.object({
+	query: z.object({
+		page: z.coerce
+			.number()
+			.min(1, "The number of pages must be at least 1.")
+			.default(1),
+		limit: z.coerce
+			.number()
+			.min(1)
+			.max(100, "A maximum of 100 records can be retrieved at a time.")
+			.default(10),
+		search: z.string().optional().default(""),
+	}),
+});
+
+export type PostQueryInput = z.infer<typeof postQuerySchema>["query"];

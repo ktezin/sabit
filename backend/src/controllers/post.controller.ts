@@ -3,6 +3,7 @@ import { catchAsync } from "../utils/catchAsync";
 import { AppError } from "../utils/AppError";
 import path from "path";
 import fs from "fs/promises";
+import { PostQueryInput } from "../schemas/post.schema";
 
 const slugify = (text: string) => {
 	return text
@@ -19,8 +20,8 @@ const slugify = (text: string) => {
 
 const clearIndexCache = async () => {
 	const indexPath = path.join(process.cwd(), "dist", "index.html");
-	// Dosya varsa sil, yoksa hata verme (catch null)
 	await fs.unlink(indexPath).catch(() => null);
+
 	console.log("Index cache cleared.");
 };
 
@@ -71,14 +72,47 @@ export const updatePost = catchAsync(async (req, res, next) => {
 });
 
 export const getPosts = catchAsync(async (req, res, next) => {
-	const posts = await prisma.post.findMany({
-		orderBy: { createdAt: "desc" },
-	});
+	const page = Number(req.query.page) || 1;
+	const limit = Number(req.query.limit) || 10;
+	const search = (req.query.search as string) || "";
+
+	const skip = (page - 1) * limit;
+
+	const whereClause = {
+		OR: [{ title: { contains: search, mode: "insensitive" as const } }],
+	};
+
+	const [totalPosts, posts] = await prisma.$transaction([
+		prisma.post.count({ where: whereClause }),
+		prisma.post.findMany({
+			where: whereClause,
+			skip: skip,
+			take: limit,
+			orderBy: { createdAt: "desc" },
+			select: {
+				id: true,
+				title: true,
+				slug: true,
+				published: true,
+				createdAt: true,
+			},
+		}),
+	]);
+
+	const totalPages = Math.ceil(totalPosts / limit);
 
 	res.status(200).json({
 		status: "success",
 		results: posts.length,
-		data: posts,
+		data: {
+			posts,
+			pagination: {
+				page,
+				limit,
+				totalPages,
+				totalPosts,
+			},
+		},
 	});
 });
 

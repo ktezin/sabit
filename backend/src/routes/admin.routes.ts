@@ -2,7 +2,7 @@ import { Router } from "express";
 import { getSettings, getTemplates, triggerBuild, updateSettings, updateTemplate } from "../controllers/admin.controller";
 import { validate } from "../middlewares/validate";
 import { updateTemplateSchema } from "../schemas/admin.schema";
-import { createPostSchema, updatePostSchema } from "../schemas/post.schema";
+import { createPostSchema, postQuerySchema, updatePostSchema } from "../schemas/post.schema";
 import {
 	createPost,
 	deletePost,
@@ -13,7 +13,7 @@ import {
 
 const router = Router();
 
-router.get("/posts", getPosts);
+router.get("/posts", validate(postQuerySchema), getPosts);
 router.post("/posts", validate(createPostSchema), createPost);
 router.get("/posts/:postId", getPostById);
 router.delete("/posts/:postId", deletePost);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation"; // useParams önemli
+import { useRouter, useParams } from "next/navigation"; // useParams is important
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,18 +69,18 @@ export default function EditPostPage() {
 				}
 			);
 
-			if (!res.ok) throw new Error("Güncelleme başarısız");
+			if (!res.ok) throw new Error("Update failed");
 
 			router.push("/dashboard/posts");
 			router.refresh();
 		} catch (error) {
-			alert("Hata oluştu");
+			alert("An error occurred");
 		} finally {
 			setLoading(false);
 		}
 	};
 
-	if (fetching) return <div className="p-6">Veriler yükleniyor...</div>;
+	if (fetching) return <div className="p-6">Loading data...</div>;
 
 	return (
 		<div className="max-w-2xl mx-auto space-y-6">
@@ -88,7 +88,7 @@ export default function EditPostPage() {
 				<Button variant="ghost" size="icon" onClick={() => router.back()}>
 					<ArrowLeft className="h-4 w-4" />
 				</Button>
-				<h2 className="text-2xl font-bold tracking-tight">Yazıyı Düzenle</h2>
+				<h2 className="text-2xl font-bold tracking-tight">Edit Post</h2>
 			</div>
 
 			<form
@@ -96,7 +96,7 @@ export default function EditPostPage() {
 				className="space-y-6 border p-6 rounded-lg bg-white dark:bg-zinc-900"
 			>
 				<div className="space-y-2">
-					<Label htmlFor="title">Başlık</Label>
+					<Label htmlFor="title">Title</Label>
 					<Input
 						id="title"
 						value={formData.title}
@@ -115,12 +115,12 @@ export default function EditPostPage() {
 						onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
 					/>
 					<p className="text-xs text-muted-foreground">
-						Dikkat: URL değişirse eski linkler kırılabilir.
+						Warning: Changing the URL might break old links.
 					</p>
 				</div>
 
 				<div className="space-y-2">
-					<Label htmlFor="content">İçerik</Label>
+					<Label htmlFor="content">Content</Label>
 					{!fetching && (
 						<Editor
 							value={formData.content}
@@ -130,7 +130,7 @@ export default function EditPostPage() {
 				</div>
 
 				<div className="flex items-center justify-between border p-4 rounded-md">
-					<Label>Yayınla</Label>
+					<Label>Publish</Label>
 					<Switch
 						checked={formData.published}
 						onCheckedChange={(checked) =>
@@ -141,10 +141,10 @@ export default function EditPostPage() {
 
 				<Button type="submit" className="w-full" disabled={loading}>
 					{loading ? (
-						"Kaydediliyor..."
+						"Saving..."
 					) : (
 						<>
-							<Save className="mr-2 h-4 w-4" /> Değişiklikleri Kaydet
+							<Save className="mr-2 h-4 w-4" /> Save Changes
 						</>
 					)}
 				</Button>

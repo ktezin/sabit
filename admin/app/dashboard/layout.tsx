@@ -8,7 +8,6 @@ import {
 	FileText,
 	Settings,
 	LogOut,
-	User,
 	Menu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -45,9 +44,9 @@ export default function DashboardLayout({
 	};
 
 	const navItems = [
-		{ name: "Genel Bakış", href: "/dashboard", icon: LayoutDashboard },
-		{ name: "Yazılar", href: "/dashboard/posts", icon: FileText },
-		{ name: "Ayarlar", href: "/dashboard/settings", icon: Settings },
+		{ name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+		{ name: "Posts", href: "/dashboard/posts", icon: FileText },
+		{ name: "Settings", href: "/dashboard/settings", icon: Settings },
 	];
 
 	return (
@@ -93,7 +92,7 @@ export default function DashboardLayout({
 						onClick={handleLogout}
 					>
 						<LogOut size={20} />
-						<span className={!isSidebarOpen ? "hidden" : ""}>Çıkış Yap</span>
+						<span className={!isSidebarOpen ? "hidden" : ""}>Logout</span>
 					</Button>
 				</div>
 			</aside>
@@ -113,7 +112,7 @@ export default function DashboardLayout({
 					</Button>
 
 					<div className="flex items-center gap-4">
-						<span className="text-sm text-gray-500">Hoşgeldin, Admin</span>
+						<span className="text-sm text-gray-500">Welcome, Admin</span>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button
@@ -140,7 +139,7 @@ export default function DashboardLayout({
 									onClick={handleLogout}
 									className="text-red-500 cursor-pointer"
 								>
-									Çıkış Yap
+									Logout
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>

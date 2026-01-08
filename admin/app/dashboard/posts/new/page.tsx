@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label"; // Eğer kurulu değilse: npx shadcn@latest add textarea
-import { Switch } from "@/components/ui/switch"; // Eğer kurulu değilse: npx shadcn@latest add switch
+import { Label } from "@/components/ui/label"; // If not installed: npx shadcn@latest add textarea
+import { Switch } from "@/components/ui/switch"; // If not installed: npx shadcn@latest add switch
 import { ArrowLeft, Save } from "lucide-react";
 import Editor from "@/components/editor";
 
@@ -34,12 +34,12 @@ export default function NewPostPage() {
 				body: JSON.stringify(formData),
 			});
 
-			if (!res.ok) throw new Error("Yazı oluşturulamadı");
+			if (!res.ok) throw new Error("Failed to create post");
 
 			router.push("/dashboard/posts");
 			router.refresh();
 		} catch (error) {
-			alert("Hata oluştu!");
+			alert("An error occurred!");
 		} finally {
 			setLoading(false);
 		}
@@ -51,7 +51,7 @@ export default function NewPostPage() {
 				<Button variant="ghost" size="icon" onClick={() => router.back()}>
 					<ArrowLeft className="h-4 w-4" />
 				</Button>
-				<h2 className="text-2xl font-bold tracking-tight">Yeni Yazı Oluştur</h2>
+				<h2 className="text-2xl font-bold tracking-tight">Create New Post</h2>
 			</div>
 
 			<form
@@ -59,10 +59,10 @@ export default function NewPostPage() {
 				className="space-y-6 border p-6 rounded-lg bg-white dark:bg-zinc-900"
 			>
 				<div className="space-y-2">
-					<Label htmlFor="title">Yazı Başlığı</Label>
+					<Label htmlFor="title">Post Title</Label>
 					<Input
 						id="title"
-						placeholder="Örn: Next.js ile Blog Yapımı"
+						placeholder="Ex: Building a Blog with Next.js"
 						value={formData.title}
 						onChange={(e) =>
 							setFormData({ ...formData, title: e.target.value })
@@ -72,7 +72,7 @@ export default function NewPostPage() {
 				</div>
 
 				<div className="space-y-2">
-					<Label htmlFor="content">İçerik</Label>
+					<Label htmlFor="content">Content</Label>
 					<Editor
 						value={formData.content}
 						onChange={(html) => setFormData({ ...formData, content: html })}
@@ -81,9 +81,9 @@ export default function NewPostPage() {
 
 				<div className="flex items-center justify-between border p-4 rounded-md">
 					<div className="space-y-0.5">
-						<Label className="text-base">Yayınla</Label>
+						<Label className="text-base">Publish</Label>
 						<p className="text-sm text-muted-foreground">
-							Aktif edilirse yazı hemen sitede görünür.
+							If enabled, the post will be visible on the site immediately.
 						</p>
 					</div>
 					<Switch
@@ -100,7 +100,7 @@ export default function NewPostPage() {
 					) : (
 						<Save className="mr-2 h-4 w-4" />
 					)}
-					Kaydet ve Oluştur
+					Save and Create
 				</Button>
 			</form>
 		</div>

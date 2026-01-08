@@ -22,6 +22,14 @@ interface Post {
 	createdAt: string;
 }
 
+interface Post {
+	id: string;
+	title: string;
+	slug: string;
+	published: boolean;
+	createdAt: string;
+}
+
 export default function PostsPage() {
 	const [posts, setPosts] = useState<Post[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -43,7 +51,7 @@ export default function PostsPage() {
 	}, []);
 
 	const handleDelete = async (id: string) => {
-		if (!confirm("Bu yazıyı silmek istediğinize emin misiniz?")) return;
+		if (!confirm("Are you sure you want to delete this post?")) return;
 
 		try {
 			const token = localStorage.getItem("token");
@@ -55,23 +63,23 @@ export default function PostsPage() {
 			if (res.ok) {
 				setPosts((prev) => prev.filter((post) => post.id !== id));
 			} else {
-				alert("Silme işlemi başarısız oldu.");
+				alert("Delete operation failed.");
 			}
 		} catch (error) {
 			console.error(error);
-			alert("Bir hata oluştu.");
+			alert("An error occurred.");
 		}
 	};
 
-	if (loading) return <div className="p-4">Yükleniyor...</div>;
+	if (loading) return <div className="p-4">Loading...</div>;
 
 	return (
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
-				<h2 className="text-3xl font-bold tracking-tight">Yazılar</h2>
+				<h2 className="text-3xl font-bold tracking-tight">Posts</h2>
 				<Link href="/dashboard/posts/new">
 					<Button>
-						<Plus className="mr-2 h-4 w-4" /> Yeni Yazı Ekle
+						<Plus className="mr-2 h-4 w-4" /> Add New Post
 					</Button>
 				</Link>
 			</div>
@@ -80,11 +88,11 @@ export default function PostsPage() {
 				<Table>
 					<TableHeader>
 						<TableRow>
-							<TableHead>Başlık</TableHead>
-							<TableHead>Slug (URL)</TableHead>
-							<TableHead>Durum</TableHead>
-							<TableHead>Tarih</TableHead>
-							<TableHead className="text-right">İşlemler</TableHead>
+							<TableHead>Title</TableHead>
+							<TableHead>Slug</TableHead>
+							<TableHead>Status</TableHead>
+							<TableHead>Date</TableHead>
+							<TableHead className="text-right">Actions</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -94,7 +102,7 @@ export default function PostsPage() {
 									colSpan={5}
 									className="text-center h-24 text-muted-foreground"
 								>
-									Henüz hiç yazı yok.
+									No posts found yet.
 								</TableCell>
 							</TableRow>
 						) : (
@@ -106,11 +114,11 @@ export default function PostsPage() {
 									</TableCell>
 									<TableCell>
 										<Badge variant={post.published ? "default" : "secondary"}>
-											{post.published ? "Yayında" : "Taslak"}
+											{post.published ? "Published" : "Draft"}
 										</Badge>
 									</TableCell>
 									<TableCell>
-										{new Date(post.createdAt).toLocaleDateString("tr-TR")}
+										{new Date(post.createdAt).toLocaleDateString("en-US")}
 									</TableCell>
 									<TableCell className="text-right">
 										<Link href={`/dashboard/posts/${post.id}`}>

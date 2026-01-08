@@ -96,12 +96,12 @@ export default function SettingsPage() {
 			}
 		} catch (error: any) {
 			if (error.message === "Unauthorized") {
-				toast.error("Oturum süreniz doldu.");
+				toast.error("Session expired.");
 				localStorage.removeItem("token");
 				router.push("/login");
 			} else {
-				console.error("Veri çekme hatası:", error);
-				toast.error("Veriler yüklenirken hata oluştu.");
+				console.error("Data fetch error:", error);
+				toast.error("An error occurred while loading data.");
 			}
 		}
 	};
@@ -131,11 +131,11 @@ export default function SettingsPage() {
 
 			const data = await res.json();
 			if (data.status === "success") {
-				toast.success("Ayarlar başarıyla kaydedildi.");
+				toast.success("Settings saved successfully.");
 			}
 		} catch (error: any) {
 			if (error.message === "Unauthorized") router.push("/login");
-			else toast.error("Kaydetme başarısız.");
+			else toast.error("Save failed.");
 		} finally {
 			setLoading(false);
 		}
@@ -174,11 +174,11 @@ export default function SettingsPage() {
 					t.type === selectedTemplateType ? { ...t, content: editorContent } : t
 				);
 				setTemplates(updatedTemplates);
-				toast.success("Şablon güncellendi ve cache temizlendi.");
+				toast.success("Template updated and cache cleared.");
 			}
 		} catch (error: any) {
 			if (error.message === "Unauthorized") router.push("/login");
-			else toast.error("Şablon kaydedilemedi.");
+			else toast.error("Failed to save template.");
 		} finally {
 			setLoading(false);
 		}
@@ -202,11 +202,11 @@ export default function SettingsPage() {
 			const data = await res.json();
 
 			if (data.status === "success") {
-				toast.success(`Site başarıyla oluşturuldu!`);
+				toast.success(`Site built successfully!`);
 			}
 		} catch (error: any) {
 			if (error.message === "Unauthorized") router.push("/login");
-			else toast.error("Build işlemi başarısız oldu.");
+			else toast.error("Build process failed.");
 		} finally {
 			setBuildLoading(false);
 		}
@@ -216,9 +216,9 @@ export default function SettingsPage() {
 		<div className="space-y-6">
 			<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 				<div>
-					<h2 className="text-3xl font-bold tracking-tight">Ayarlar</h2>
+					<h2 className="text-3xl font-bold tracking-tight">Settings</h2>
 					<p className="text-muted-foreground">
-						Sitenizin genel yapılandırmasını ve görünümünü yönetin.
+						Manage the general configuration and appearance of your site.
 					</p>
 				</div>
 				<Button
@@ -231,58 +231,58 @@ export default function SettingsPage() {
 					) : (
 						<Monitor className="mr-2 h-4 w-4" />
 					)}
-					{buildLoading ? "Site Oluşturuluyor..." : "Siteyi Build Et"}
+					{buildLoading ? "Building Site..." : "Build Site"}
 				</Button>
 			</div>
 
 			<Tabs defaultValue="general" className="w-full">
-				<TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
-					<TabsTrigger value="general">Genel Ayarlar</TabsTrigger>
-					<TabsTrigger value="templates">Şablon Düzenleyici</TabsTrigger>
+				<TabsList className="grid w-full grid-cols-2 lg:w-100">
+					<TabsTrigger value="general">General Settings</TabsTrigger>
+					<TabsTrigger value="templates">Template Editor</TabsTrigger>
 				</TabsList>
 
 				<TabsContent value="general" className="mt-6 space-y-4">
 					<Card>
 						<CardHeader>
-							<CardTitle>Site Bilgileri</CardTitle>
+							<CardTitle>Site Information</CardTitle>
 							<CardDescription>
-								SEO ve footer alanlarında görünecek temel bilgiler.
+								Basic information to appear in SEO and footer areas.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="space-y-4">
 							<div className="space-y-1">
-								<Label htmlFor="siteTitle">Site Başlığı</Label>
+								<Label htmlFor="siteTitle">Site Title</Label>
 								<Input
 									id="siteTitle"
 									name="siteTitle"
 									value={settings.siteTitle}
 									onChange={handleSettingsChange}
-									placeholder="Örn: Benim Harika Blogum"
+									placeholder="Ex: My Awesome Blog"
 								/>
 							</div>
 							<div className="space-y-1">
-								<Label htmlFor="siteDescription">Site Açıklaması</Label>
+								<Label htmlFor="siteDescription">Site Description</Label>
 								<Textarea
 									id="siteDescription"
 									name="siteDescription"
 									value={settings.siteDescription}
 									onChange={handleSettingsChange}
-									placeholder="Siteniz hakkında kısa bir açıklama..."
+									placeholder="A short description about your site..."
 								/>
 							</div>
 							<div className="space-y-1">
-								<Label htmlFor="footerText">Footer Metni</Label>
+								<Label htmlFor="footerText">Footer Text</Label>
 								<Input
 									id="footerText"
 									name="footerText"
 									value={settings.footerText}
 									onChange={handleSettingsChange}
-									placeholder="© 2026 Tüm hakları saklıdır."
+									placeholder="© 2026 All rights reserved."
 								/>
 							</div>
 
 							<div className="space-y-1">
-								<Label>Tema Seçimi</Label>
+								<Label>Theme Selection</Label>
 								<Select
 									value={settings.activeTheme}
 									onValueChange={(val) =>
@@ -290,19 +290,17 @@ export default function SettingsPage() {
 									}
 								>
 									<SelectTrigger>
-										<SelectValue placeholder="Tema Seçin" />
+										<SelectValue placeholder="Select Theme" />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="default">
-											Varsayılan (Default)
-										</SelectItem>
-										<SelectItem value="dark">Karanlık Mod (Dark)</SelectItem>
+										<SelectItem value="default">Default</SelectItem>
+										<SelectItem value="dark">Dark Mode</SelectItem>
 										<SelectItem value="minimal">Minimalist</SelectItem>
 									</SelectContent>
 								</Select>
 								<p className="text-xs text-muted-foreground mt-1">
-									Bu ayar, build işlemi sırasında dist klasörüne hangi temadan
-									dosya üretileceğini seçer.
+									This setting determines which theme files will be generated in
+									the dist folder during build.
 								</p>
 							</div>
 
@@ -311,7 +309,7 @@ export default function SettingsPage() {
 									{loading && (
 										<RefreshCw className="mr-2 h-4 w-4 animate-spin" />
 									)}
-									<Save className="mr-2 h-4 w-4" /> Değişiklikleri Kaydet
+									<Save className="mr-2 h-4 w-4" /> Save Changes
 								</Button>
 							</div>
 						</CardContent>
@@ -319,25 +317,25 @@ export default function SettingsPage() {
 				</TabsContent>
 
 				<TabsContent value="templates" className="mt-6">
-					<Card className="min-h-[600px] flex flex-col overflow-hidden">
+					<Card className="min-h-150 flex flex-col overflow-hidden">
 						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b">
 							<div className="space-y-1">
 								<CardTitle className="flex items-center gap-2">
-									<Code className="h-5 w-5 text-blue-500" /> HTML Şablon
-									Düzenleyici
+									<Code className="h-5 w-5 text-blue-500" /> HTML Template
+									Editor
 								</CardTitle>
 								<CardDescription>
-									LiquidJS formatında HTML kodlarını düzenleyin.
+									Edit HTML codes in LiquidJS format.
 								</CardDescription>
 							</div>
 
-							<div className="w-[200px]">
+							<div className="w-50">
 								<Select
 									value={selectedTemplateType}
 									onValueChange={handleTemplateSelect}
 								>
 									<SelectTrigger>
-										<SelectValue placeholder="Şablon Seç" />
+										<SelectValue placeholder="Select Template" />
 									</SelectTrigger>
 									<SelectContent>
 										{templates.map((t) => (
@@ -371,14 +369,14 @@ export default function SettingsPage() {
 
 							<div className="p-4 border-t border-zinc-700 bg-zinc-900 flex justify-between items-center">
 								<span className="text-xs text-zinc-400">
-									Editör: Monaco (VS Code) Engine
+									Editor: Monaco (VS Code) Engine
 								</span>
 								<Button
 									onClick={handleSaveTemplate}
 									disabled={loading}
 									className="bg-blue-600 hover:bg-blue-700"
 								>
-									{loading ? "Kaydediliyor..." : "Şablonu Kaydet"}
+									{loading ? "Saving..." : "Save Template"}
 								</Button>
 							</div>
 						</CardContent>

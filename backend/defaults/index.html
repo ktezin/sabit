@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{{ siteTitle }}</title>
+		<style>
+			body {
+				font-family: sans-serif;
+				max-width: 800px;
+				margin: 0 auto;
+				padding: 2rem;
+				line-height: 1.6;
+			}
+			header {
+				border-bottom: 1px solid #ddd;
+				padding-bottom: 1rem;
+				margin-bottom: 2rem;
+			}
+			h1 {
+				margin: 0;
+			}
+			.post-item {
+				margin-bottom: 1.5rem;
+			}
+			.date {
+				color: #666;
+				font-size: 0.9rem;
+			}
+			footer {
+				margin-top: 3rem;
+				border-top: 1px solid #ddd;
+				padding-top: 1rem;
+				color: #666;
+				font-size: 0.8rem;
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<h1>{{ siteTitle }}</h1>
+			<p>{{ siteDescription }}</p>
+		</header>
+		<main>
+			{% for post in posts %}
+			<div class="post-item">
+				<h2><a href="/{{ post.slug }}">{{ post.title }}</a></h2>
+				<div class="date">{{ post.createdAt | date: "%B %d, %Y" }}</div>
+			</div>
+			{% endfor %}
+		</main>
+		<footer>
+			<p>{{ footerText }}</p>
+		</footer>
+	</body>
+</html>

@@ -37,17 +37,16 @@ export default function LoginPage() {
 			const data = await res.json();
 
 			if (!res.ok) {
-				throw new Error(data.message || "Giriş başarısız");
+				// Backend'den mesaj gelmezse varsayılan olarak "Login failed" gösterilecek
+				throw new Error(data.message || "Login failed");
 			}
 
 			localStorage.setItem("token", data.token);
-
 			localStorage.setItem("user", JSON.stringify(data.data.user));
 
 			router.push("/dashboard");
 		} catch (err: any) {
 			setError(err.message);
-		} finally {
 			setLoading(false);
 		}
 	};
@@ -61,10 +60,8 @@ export default function LoginPage() {
 							<Lock className="w-6 h-6 text-primary" />
 						</div>
 					</div>
-					<CardTitle className="text-2xl font-bold">Admin Girişi</CardTitle>
-					<CardDescription>
-						Devam etmek için bilgilerinizi giriniz
-					</CardDescription>
+					<CardTitle className="text-2xl font-bold">Admin Login</CardTitle>
+					<CardDescription>Enter your credentials to continue</CardDescription>
 				</CardHeader>
 				<form onSubmit={handleLogin}>
 					<CardContent className="space-y-4">
@@ -74,7 +71,7 @@ export default function LoginPage() {
 							</div>
 						)}
 						<div className="space-y-2">
-							<Label htmlFor="email">E-posta</Label>
+							<Label htmlFor="email">Email</Label>
 							<Input
 								id="email"
 								type="email"
@@ -85,7 +82,7 @@ export default function LoginPage() {
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="password">Şifre</Label>
+							<Label htmlFor="password">Password</Label>
 							<Input
 								id="password"
 								type="password"
@@ -96,9 +93,9 @@ export default function LoginPage() {
 							/>
 						</div>
 					</CardContent>
-					<CardFooter>
+					<CardFooter className="mt-4">
 						<Button className="w-full" type="submit" disabled={loading}>
-							{loading ? "Giriş Yapılıyor..." : "Giriş Yap"}
+							{loading ? "Logging in..." : "Login"}
 						</Button>
 					</CardFooter>
 				</form>

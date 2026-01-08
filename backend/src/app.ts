@@ -7,6 +7,7 @@ import { PageController } from "./controllers/page.controller";
 import { globalErrorHandler } from "./middlewares/errorHandler";
 import adminRoutes from "./routes/admin.routes";
 import authRoutes from "./routes/auth.routes";
+import setupRoutes from "./routes/setup.routes";
 import { protect } from "./middlewares/auth.middleware";
 
 const app = express();
@@ -17,6 +18,8 @@ app.use(express.json());
 if (process.env.NODE_ENV === "development") {
 	app.use(morgan("dev"));
 }
+
+app.use("/api/setup", setupRoutes);
 
 app.use("/api/auth", authRoutes);
 

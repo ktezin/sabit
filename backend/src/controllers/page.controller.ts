@@ -11,6 +11,17 @@ const buildService = new BuildService();
 export class PageController {
 	static serveSite = catchAsync(
 		async (req: Request, res: Response, next: NextFunction) => {
+			const userCount = await prisma.user.count();
+
+			if (userCount === 0) {
+				const notInstalledPath = path.join(
+					process.cwd(),
+					"defaults",
+					"not-installed.html"
+				);
+				return res.sendFile(notInstalledPath);
+			}
+
 			const { slug } = req.params;
 
 			const fileName = !slug ? "index.html" : `${slug}.html`;
@@ -50,7 +61,7 @@ export class PageController {
 					posts,
 				});
 			} else {
-				console.log(slug)
+				console.log(slug);
 				const post = await prisma.post.findUnique({ where: { slug } });
 
 				if (!post) return next(new AppError("Page not found", 404));

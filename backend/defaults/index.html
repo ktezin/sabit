@@ -3,50 +3,80 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>{{ siteTitle }}</title>
+		<title>{{ siteName }}</title>
+		<meta name="description" content="{{ siteDescription }}" />
+		<meta name="robots" content="index, follow" />
+
+		<meta property="og:title" content="{{ siteName }}" />
+		<meta property="og:description" content="{{ siteDescription }}" />
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="/" />
+
 		<style>
 			body {
-				font-family: sans-serif;
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+					Helvetica, Arial, sans-serif;
 				max-width: 800px;
 				margin: 0 auto;
 				padding: 2rem;
 				line-height: 1.6;
+				color: #333;
 			}
 			header {
-				border-bottom: 1px solid #ddd;
-				padding-bottom: 1rem;
-				margin-bottom: 2rem;
+				border-bottom: 1px solid #eaeaea;
+				padding-bottom: 2rem;
+				margin-bottom: 3rem;
 			}
 			h1 {
 				margin: 0;
+				font-size: 2.5rem;
+				letter-spacing: -1px;
 			}
+			p.desc {
+				color: #666;
+				font-size: 1.2rem;
+				margin-top: 0.5rem;
+			}
+
 			.post-item {
-				margin-bottom: 1.5rem;
+				margin-bottom: 2rem;
+			}
+			.post-item h2 {
+				margin: 0 0 0.5rem 0;
+			}
+			.post-item a {
+				text-decoration: none;
+				color: #111;
+			}
+			.post-item a:hover {
+				color: #0070f3;
+				text-decoration: underline;
 			}
 			.date {
-				color: #666;
+				color: #888;
 				font-size: 0.9rem;
 			}
+
 			footer {
-				margin-top: 3rem;
-				border-top: 1px solid #ddd;
-				padding-top: 1rem;
-				color: #666;
-				font-size: 0.8rem;
+				margin-top: 4rem;
+				border-top: 1px solid #eaeaea;
+				padding-top: 2rem;
+				color: #888;
+				font-size: 0.9rem;
 				text-align: center;
 			}
 		</style>
 	</head>
 	<body>
 		<header>
-			<h1>{{ siteTitle }}</h1>
-			<p>{{ siteDescription }}</p>
+			<h1>{{ siteName }}</h1>
+			<p class="desc">{{ siteDescription }}</p>
 		</header>
 		<main>
 			{% for post in posts %}
 			<div class="post-item">
 				<h2><a href="/{{ post.slug }}">{{ post.title }}</a></h2>
-				<div class="date">{{ post.createdAt | date: "%B %d, %Y" }}</div>
+				<time class="date">{{ post.createdAt | date: "%B %d, %Y" }}</time>
 			</div>
 			{% endfor %}
 		</main>

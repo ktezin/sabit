@@ -3,7 +3,7 @@ import { catchAsync } from "../utils/catchAsync";
 import { AppError } from "../utils/AppError";
 import path from "path";
 import fs from "fs/promises";
-import { PostQueryInput } from "../schemas/post.schema";
+
 
 const slugify = (text: string) => {
 	return text

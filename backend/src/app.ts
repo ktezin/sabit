@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
+import path from "node:path";
 
 import { AppError } from "./utils/AppError";
 import { PageController } from "./controllers/page.controller";
@@ -11,7 +12,6 @@ import setupRoutes from "./routes/setup.routes";
 import { protect } from "./middlewares/auth.middleware";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -24,6 +24,8 @@ app.use("/api/setup", setupRoutes);
 app.use("/api/auth", authRoutes);
 
 app.use("/api/admin", protect, adminRoutes);
+
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.get("/:slug", PageController.serveSite);
 app.get("/", PageController.serveSite);

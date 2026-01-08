@@ -2,8 +2,19 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Button } from "./ui/button";
-import { Bold, Italic, List, Heading2 } from "lucide-react";
+import { ImagePlus } from "tiptap-image-plus";
+import {
+	Bold,
+	Italic,
+	Strikethrough,
+	Heading1,
+	Heading2,
+	List,
+	ListOrdered,
+	Quote,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ImageUploader } from "@/components/image-uploader";
 
 interface EditorProps {
 	value: string;
@@ -12,13 +23,20 @@ interface EditorProps {
 
 export default function Editor({ value, onChange }: EditorProps) {
 	const editor = useEditor({
-		extensions: [StarterKit],
-		content: value,
+		extensions: [
+			StarterKit,
+			ImagePlus.configure({
+				// Optional: custom options
+				wrapperStyle: {},
+				containerStyle: {},
+			}),
+		],
 		immediatelyRender: false,
+		content: value,
 		editorProps: {
 			attributes: {
 				class:
-					"min-h-[200px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 prose prose-sm sm:prose max-w-none dark:prose-invert",
+					"prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[400px] p-4",
 			},
 		},
 		onUpdate: ({ editor }) => {
@@ -30,21 +48,20 @@ export default function Editor({ value, onChange }: EditorProps) {
 		return null;
 	}
 
-	const toggleBold = () => editor.chain().focus().toggleBold().run();
-	const toggleItalic = () => editor.chain().focus().toggleItalic().run();
-	const toggleH2 = () =>
-		editor.chain().focus().toggleHeading({ level: 2 }).run();
-	const toggleBulletList = () =>
-		editor.chain().focus().toggleBulletList().run();
+	const addImage = (url: string) => {
+		if (url) {
+			editor.chain().focus().setImage({ src: url }).run();
+		}
+	};
 
 	return (
-		<div className="flex flex-col gap-2 border rounded-md overflow-hidden bg-white dark:bg-zinc-900">
-			<div className="flex items-center gap-1 border-b bg-muted/40 p-1">
+		<div className="border rounded-md shadow-sm bg-background">
+			<div className="flex flex-wrap gap-1 border-b p-2 bg-muted/30">
 				<Button
 					type="button"
 					variant="ghost"
 					size="sm"
-					onClick={toggleBold}
+					onClick={() => editor.chain().focus().toggleBold().run()}
 					className={editor.isActive("bold") ? "bg-muted" : ""}
 				>
 					<Bold className="h-4 w-4" />
@@ -53,33 +70,87 @@ export default function Editor({ value, onChange }: EditorProps) {
 					type="button"
 					variant="ghost"
 					size="sm"
-					onClick={toggleItalic}
+					onClick={() => editor.chain().focus().toggleItalic().run()}
 					className={editor.isActive("italic") ? "bg-muted" : ""}
 				>
 					<Italic className="h-4 w-4" />
 				</Button>
-				<div className="w-px h-6 bg-border mx-1" />
 				<Button
 					type="button"
 					variant="ghost"
 					size="sm"
-					onClick={toggleH2}
+					onClick={() => editor.chain().focus().toggleStrike().run()}
+					className={editor.isActive("strike") ? "bg-muted" : ""}
+				>
+					<Strikethrough className="h-4 w-4" />
+				</Button>
+
+				<div className="w-px h-6 bg-border mx-1" />
+
+				<Button
+					type="button"
+					variant="ghost"
+					size="sm"
+					onClick={() =>
+						editor.chain().focus().toggleHeading({ level: 1 }).run()
+					}
+					className={editor.isActive("heading", { level: 1 }) ? "bg-muted" : ""}
+				>
+					<Heading1 className="h-4 w-4" />
+				</Button>
+				<Button
+					type="button"
+					variant="ghost"
+					size="sm"
+					onClick={() =>
+						editor.chain().focus().toggleHeading({ level: 2 }).run()
+					}
 					className={editor.isActive("heading", { level: 2 }) ? "bg-muted" : ""}
 				>
 					<Heading2 className="h-4 w-4" />
 				</Button>
+
+				<div className="w-px h-6 bg-border mx-1" />
+
 				<Button
 					type="button"
 					variant="ghost"
 					size="sm"
-					onClick={toggleBulletList}
+					onClick={() => editor.chain().focus().toggleBulletList().run()}
 					className={editor.isActive("bulletList") ? "bg-muted" : ""}
 				>
 					<List className="h-4 w-4" />
 				</Button>
+				<Button
+					type="button"
+					variant="ghost"
+					size="sm"
+					onClick={() => editor.chain().focus().toggleOrderedList().run()}
+					className={editor.isActive("orderedList") ? "bg-muted" : ""}
+				>
+					<ListOrdered className="h-4 w-4" />
+				</Button>
+
+				<div className="w-px h-6 bg-border mx-1" />
+
+				<Button
+					type="button"
+					variant="ghost"
+					size="sm"
+					onClick={() => editor.chain().focus().toggleBlockquote().run()}
+					className={editor.isActive("blockquote") ? "bg-muted" : ""}
+				>
+					<Quote className="h-4 w-4" />
+				</Button>
+
+				<div className="w-px h-6 bg-border mx-1" />
+
+				<ImageUploader onUploadSuccess={addImage} />
 			</div>
 
-			<EditorContent editor={editor} className="p-2" />
+			<div className="p-2">
+				<EditorContent editor={editor} />
+			</div>
 		</div>
 	);
 }

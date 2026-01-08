@@ -2,30 +2,33 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label"; // If not installed: npx shadcn@latest add textarea
-import { Switch } from "@/components/ui/switch"; // If not installed: npx shadcn@latest add switch
-import { ArrowLeft, Save } from "lucide-react";
-import Editor from "@/components/editor";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "sonner";
 import { API_URL } from "@/lib/utils";
+import Editor from "@/components/editor";
 
 export default function NewPostPage() {
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
-
 	const [formData, setFormData] = useState({
 		title: "",
+		slug: "",
 		content: "",
 		published: false,
 	});
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleCreate = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setLoading(true);
+		const token = localStorage.getItem("token");
 
 		try {
-			const token = localStorage.getItem("token");
 			const res = await fetch(`${API_URL}/api/admin/posts`, {
 				method: "POST",
 				headers: {
@@ -35,74 +38,96 @@ export default function NewPostPage() {
 				body: JSON.stringify(formData),
 			});
 
-			if (!res.ok) throw new Error("Failed to create post");
-
-			router.push("/dashboard/posts");
-			router.refresh();
+			if (res.ok) {
+				toast.success("Post created successfully!");
+				router.push("/dashboard/posts");
+			} else {
+				toast.error("Failed to create post.");
+			}
 		} catch (error) {
-			alert("An error occurred!");
+			toast.error("An error occurred.");
 		} finally {
 			setLoading(false);
 		}
 	};
 
 	return (
-		<div className="max-w-2xl mx-auto space-y-6">
-			<div className="flex items-center gap-4">
-				<Button variant="ghost" size="icon" onClick={() => router.back()}>
-					<ArrowLeft className="h-4 w-4" />
-				</Button>
-				<h2 className="text-2xl font-bold tracking-tight">Create New Post</h2>
+		<div className="max-w-4xl mx-auto space-y-6">
+			<div className="flex items-center justify-between">
+				<div className="flex items-center gap-4">
+					<Link href="/dashboard/posts">
+						<Button variant="ghost" size="icon">
+							<ArrowLeft className="h-5 w-5" />
+						</Button>
+					</Link>
+					<h2 className="text-2xl font-bold tracking-tight">Create New Post</h2>
+				</div>
 			</div>
 
-			<form
-				onSubmit={handleSubmit}
-				className="space-y-6 border p-6 rounded-lg bg-white dark:bg-zinc-900"
-			>
-				<div className="space-y-2">
-					<Label htmlFor="title">Post Title</Label>
-					<Input
-						id="title"
-						placeholder="Ex: Building a Blog with Next.js"
-						value={formData.title}
-						onChange={(e) =>
-							setFormData({ ...formData, title: e.target.value })
-						}
-						required
-					/>
-				</div>
+			<form onSubmit={handleCreate}>
+				<div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+					<div className="lg:col-span-2 space-y-4">
+						<div className="space-y-2">
+							<Label htmlFor="title">Post Title</Label>
+							<Input
+								id="title"
+								placeholder="Enter post title"
+								type="text"
+								className="bg-card"
+								required
+								value={formData.title}
+								onChange={(e) =>
+									setFormData({ ...formData, title: e.target.value })
+								}
+							/>
+						</div>
 
-				<div className="space-y-2">
-					<Label htmlFor="content">Content</Label>
-					<Editor
-						value={formData.content}
-						onChange={(html) => setFormData({ ...formData, content: html })}
-					/>
-				</div>
-
-				<div className="flex items-center justify-between border p-4 rounded-md">
-					<div className="space-y-0.5">
-						<Label className="text-base">Publish</Label>
-						<p className="text-sm text-muted-foreground">
-							If enabled, the post will be visible on the site immediately.
-						</p>
+						<div className="space-y-2">
+							<Label>Content</Label>
+							<Editor
+								value={formData.content}
+								onChange={(html) => setFormData({ ...formData, content: html })}
+							/>
+						</div>
 					</div>
-					<Switch
-						checked={formData.published}
-						onCheckedChange={(checked) =>
-							setFormData({ ...formData, published: checked })
-						}
-					/>
-				</div>
 
-				<Button type="submit" className="w-full" disabled={loading}>
-					{loading ? (
-						<span className="animate-spin mr-2">⏳</span>
-					) : (
-						<Save className="mr-2 h-4 w-4" />
-					)}
-					Save and Create
-				</Button>
+					<div className="space-y-4">
+						<Card>
+							<CardContent className="p-4 space-y-4">
+								<div className="space-y-2">
+									<Label htmlFor="slug">Slug (URL)</Label>
+									<Input
+										id="slug"
+										placeholder="auto-generated"
+										value={formData.slug}
+										onChange={(e) =>
+											setFormData({ ...formData, slug: e.target.value })
+										}
+									/>
+								</div>
+
+								<div className="flex items-center space-x-2 pt-2">
+									<Checkbox
+										id="published"
+										checked={formData.published}
+										onCheckedChange={(checked) =>
+											setFormData({
+												...formData,
+												published: checked as boolean,
+											})
+										}
+									/>
+									<Label htmlFor="published">Publish Immediately</Label>
+								</div>
+
+								<Button type="submit" className="w-full" disabled={loading}>
+									{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+									Create Post
+								</Button>
+							</CardContent>
+						</Card>
+					</div>
+				</div>
 			</form>
 		</div>
 	);

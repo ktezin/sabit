@@ -1,5 +1,6 @@
 import { Liquid } from "liquidjs";
 import fs from "fs/promises";
+import fsExtra from "fs-extra";
 import path from "path";
 import prisma from "../config/db";
 import { AppError } from "../utils/AppError";
@@ -41,7 +42,6 @@ export class BuildService {
 			prisma.post.findMany({ where: { published: true } }),
 		]);
 
-		// Hata Kontrolü
 		if (!indexTemplate)
 			throw new AppError("Homepage template not found in DB", 404);
 		if (!postTemplate) throw new AppError("Post template not found in DB", 404);
@@ -62,6 +62,14 @@ export class BuildService {
 				...globalData,
 				post: post,
 			});
+		}
+
+		const sourceUploads = path.join(process.cwd(), "uploads");
+		const destUploads = path.join(this.outputDir, "uploads");
+
+		if (await fsExtra.pathExists(sourceUploads)) {
+			await fsExtra.copy(sourceUploads, destUploads);
+			console.log("Assets copied: /uploads -> /dist/uploads");
 		}
 
 		return { status: "success", pageCount: 1 + posts.length };

@@ -100,7 +100,7 @@ export default function MediaPage() {
 			) : (
 				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 					{files.map((file) => (
-						<Card key={file.name} className="overflow-hidden group">
+						<Card key={file.name} className="overflow-hidden group pt-0 pb-2">
 							<CardContent className="p-0">
 								<Link
 									href={`${API_URL}${file.url}`}

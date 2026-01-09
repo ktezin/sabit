@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ImageUploader } from "@/components/image-uploader";
-import ImageResize from 'tiptap-extension-resize-image';
+import ImageResize from "tiptap-extension-resize-image";
 
 interface EditorProps {
 	value: string;
@@ -23,18 +23,13 @@ interface EditorProps {
 
 export default function Editor({ value, onChange }: EditorProps) {
 	const editor = useEditor({
-		extensions: [
-			StarterKit,
-			ImageResize.configure({
-				inline: true,
-			}),
-		],
+		extensions: [StarterKit, ImageResize.configure({})],
 		immediatelyRender: false,
 		content: value,
 		editorProps: {
 			attributes: {
 				class:
-					"prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[400px] p-4",
+					"prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none min-h-[600px] p-4",
 			},
 		},
 		onUpdate: ({ editor }) => {

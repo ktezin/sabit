@@ -12,6 +12,7 @@ import {
 import { API_URL } from "@/lib/utils";
 import { toast } from "sonner";
 import Link from "next/link";
+import { LoadingSpinner } from "@/components/loading";
 
 interface FileItem {
 	name: string;
@@ -73,13 +74,6 @@ export default function MediaPage() {
 		toast.success("URL copied to clipboard!");
 	};
 
-	if (fetching)
-		return (
-			<div className="p-8 text-center text-muted-foreground">
-				Loading media library...
-			</div>
-		);
-
 	return (
 		<div className="space-y-6">
 			<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-6">
@@ -91,7 +85,9 @@ export default function MediaPage() {
 				</div>
 			</div>
 
-			{files.length === 0 ? (
+			{fetching ? (
+				<LoadingSpinner text="Loading Media..." />
+			) : files.length === 0 ? (
 				<div className="text-center py-12 border-2 border-dashed rounded-lg">
 					<ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
 					<h3 className="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">

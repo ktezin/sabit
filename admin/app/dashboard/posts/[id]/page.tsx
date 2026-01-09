@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { API_URL } from "@/lib/utils";
 import Editor from "@/components/editor";
+import { LoadingSpinner } from "@/components/loading";
 
 export default function EditPostPage() {
 	const router = useRouter();
@@ -84,9 +85,6 @@ export default function EditPostPage() {
 		}
 	};
 
-	if (fetching)
-		return <div className="p-8 text-center">Loading post data...</div>;
-
 	return (
 		<div className="max-w-4xl mx-auto space-y-6">
 			<div className="flex items-center justify-between">
@@ -100,69 +98,77 @@ export default function EditPostPage() {
 				</div>
 			</div>
 
-			<form onSubmit={handleUpdate}>
-				<div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
-					<div className="lg:col-span-2 space-y-4">
-						<div className="space-y-2">
-							<Label htmlFor="title">Post Title</Label>
-							<Input
-								id="title"
-								type="text"
-								className="bg-card"
-								value={formData?.title}
-								onChange={(e) =>
-									setFormData({ ...formData, title: e.target.value })
-								}
-								required
-							/>
+			{fetching ? (
+				<LoadingSpinner text="Loading Post Data..." />
+			) : (
+				<form onSubmit={handleUpdate}>
+					<div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+						<div className="lg:col-span-2 space-y-4">
+							<div className="space-y-2">
+								<Label htmlFor="title">Post Title</Label>
+								<Input
+									id="title"
+									type="text"
+									className="bg-card"
+									value={formData?.title}
+									onChange={(e) =>
+										setFormData({ ...formData, title: e.target.value })
+									}
+									required
+								/>
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="post-content">Content</Label>
+								<Editor
+									value={formData?.content}
+									onChange={(html) =>
+										setFormData({ ...formData, content: html })
+									}
+								/>
+							</div>
 						</div>
 
-						<div className="space-y-2">
-							<Label htmlFor="post-content">Content</Label>
-							<Editor
-								value={formData?.content}
-								onChange={(html) => setFormData({ ...formData, content: html })}
-							/>
+						<div className="space-y-4">
+							<Card>
+								<CardContent className="p-4 space-y-4">
+									<div className="space-y-2">
+										<Label htmlFor="slug">Slug</Label>
+										<Input
+											id="slug"
+											value={formData?.slug}
+											onChange={(e) =>
+												setFormData({ ...formData, slug: e.target.value })
+											}
+										/>
+									</div>
+
+									<div className="flex items-center space-x-2 pt-2">
+										<Checkbox
+											id="published"
+											checked={formData?.published}
+											onCheckedChange={(checked) =>
+												setFormData({
+													...formData,
+													published: checked as boolean,
+												})
+											}
+										/>
+										<Label htmlFor="published">Published</Label>
+									</div>
+
+									<Button type="submit" className="w-full" disabled={loading}>
+										{loading && (
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										)}
+										Update Post
+									</Button>
+								</CardContent>
+							</Card>
 						</div>
 					</div>
-
-					<div className="space-y-4">
-						<Card>
-							<CardContent className="p-4 space-y-4">
-								<div className="space-y-2">
-									<Label htmlFor="slug">Slug</Label>
-									<Input
-										id="slug"
-										value={formData?.slug}
-										onChange={(e) =>
-											setFormData({ ...formData, slug: e.target.value })
-										}
-									/>
-								</div>
-
-								<div className="flex items-center space-x-2 pt-2">
-									<Checkbox
-										id="published"
-										checked={formData?.published}
-										onCheckedChange={(checked) =>
-											setFormData({
-												...formData,
-												published: checked as boolean,
-											})
-										}
-									/>
-									<Label htmlFor="published">Published</Label>
-								</div>
-
-								<Button type="submit" className="w-full" disabled={loading}>
-									{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-									Update Post
-								</Button>
-							</CardContent>
-						</Card>
-					</div>
-				</div>
-			</form>
+				</form>
+			)}
 		</div>
 	);
 }

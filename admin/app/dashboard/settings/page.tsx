@@ -17,6 +17,7 @@ import {
 	TemplateEditorTab,
 	TemplateState,
 } from "@/components/settings/template-editor";
+import { LoadingSpinner } from "@/components/loading";
 
 export default function SettingsPage() {
 	const router = useRouter();
@@ -110,10 +111,6 @@ export default function SettingsPage() {
 		}
 	};
 
-	if (loadingData) {
-		return <div className="p-8 text-center">Loading settings...</div>;
-	}
-
 	return (
 		<div className="space-y-6">
 			<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-6">
@@ -136,27 +133,30 @@ export default function SettingsPage() {
 					{buildLoading ? "Building Site..." : "Build Site"}
 				</Button>
 			</div>
+			{loadingData ? (
+				<LoadingSpinner text="Loading Settings..." />
+			) : (
+				<Tabs
+					value={currentTab}
+					onValueChange={handleTabChange}
+					className="w-full"
+				>
+					<TabsList className="grid w-full grid-cols-2 lg:w-100 bg-slate-200 border-card drop-shadow-card">
+						<TabsTrigger value="general">General Settings</TabsTrigger>
+						<TabsTrigger value="templates">Template Editor</TabsTrigger>
+					</TabsList>
 
-			<Tabs
-				value={currentTab}
-				onValueChange={handleTabChange}
-				className="w-full"
-			>
-				<TabsList className="grid w-full grid-cols-2 lg:w-100 bg-slate-200 border-card drop-shadow-card">
-					<TabsTrigger value="general">General Settings</TabsTrigger>
-					<TabsTrigger value="templates">Template Editor</TabsTrigger>
-				</TabsList>
+					<TabsContent value="general" className="mt-6">
+						{settings && <GeneralSettingsTab initialSettings={settings} />}
+					</TabsContent>
 
-				<TabsContent value="general" className="mt-6">
-					{settings && <GeneralSettingsTab initialSettings={settings} />}
-				</TabsContent>
-
-				<TabsContent value="templates" className="mt-6">
-					{templates.length > 0 && (
-						<TemplateEditorTab initialTemplates={templates} />
-					)}
-				</TabsContent>
-			</Tabs>
+					<TabsContent value="templates" className="mt-6">
+						{templates.length > 0 && (
+							<TemplateEditorTab initialTemplates={templates} />
+						)}
+					</TabsContent>
+				</Tabs>
+			)}
 		</div>
 	);
 }

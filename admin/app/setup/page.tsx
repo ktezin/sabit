@@ -16,6 +16,7 @@ import {
 import { Rocket } from "lucide-react";
 import { toast } from "sonner";
 import { API_URL } from "@/lib/utils";
+import { LoadingSpinner } from "@/components/loading";
 
 export default function SetupPage() {
 	const router = useRouter();
@@ -87,9 +88,7 @@ export default function SetupPage() {
 
 	if (!statusChecked)
 		return (
-			<div className="min-h-screen flex items-center justify-center">
-				Loading...
-			</div>
+			<LoadingSpinner />
 		);
 
 	return (

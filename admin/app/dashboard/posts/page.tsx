@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { API_URL } from "@/lib/utils";
+import { LoadingSpinner } from "@/components/loading";
 
 interface Post {
 	id: string;
@@ -121,148 +122,150 @@ export default function PostsPage() {
 				</Link>
 			</div>
 
-			<Card>
-				<CardHeader className="pb-3">
-					<div className="flex items-center justify-between">
-						<CardTitle>Post List</CardTitle>
-						<div className="relative w-full max-w-sm">
-							<Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-							<Input
-								type="search"
-								placeholder="Search by title..."
-								className="pl-8"
-								value={search}
-								onChange={(e) => {
-									setSearch(e.target.value);
-									setPage(1);
-								}}
-							/>
-						</div>
-					</div>
-				</CardHeader>
-				<CardContent>
-					{loading ? (
-						<div className="text-center py-10">Loading...</div>
-					) : posts.length === 0 ? (
-						<div className="text-center py-10 text-muted-foreground">
-							{search
-								? "No posts found matching your criteria."
-								: "No posts added yet."}
-						</div>
-					) : (
-						<div className="relative w-full overflow-auto">
-							<table className="w-full caption-bottom text-sm text-left">
-								<thead className="[&_tr]:border-b">
-									<tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-										<th className="h-12 px-4 align-middle font-medium text-muted-foreground">
-											Title
-										</th>
-										<th className="h-12 px-4 align-middle font-medium text-muted-foreground">
-											Status
-										</th>
-										<th className="h-12 px-4 align-middle font-medium text-muted-foreground">
-											Date
-										</th>
-										<th className="h-12 px-4 align-middle font-medium text-muted-foreground text-right">
-											Actions
-										</th>
-									</tr>
-								</thead>
-								<tbody className="[&_tr:last-child]:border-0">
-									{posts.map((post) => (
-										<tr
-											key={post.id}
-											className="border-b transition-colors hover:bg-muted/50"
-										>
-											<td className="p-4 align-middle font-medium">
-												<div className="flex flex-col">
-													<span>{post.title}</span>
-													<span className="text-xs text-muted-foreground font-normal">
-														/{post.slug}
-													</span>
-												</div>
-											</td>
-											<td className="p-4 align-middle">
-												{post.published ? (
-													<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-														<CheckCircle className="w-3 h-3 mr-1" /> Published
-													</span>
-												) : (
-													<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
-														<XCircle className="w-3 h-3 mr-1" /> Draft
-													</span>
-												)}
-											</td>
-											<td className="p-4 align-middle">
-												{new Date(post.createdAt).toLocaleDateString("en-US")}
-											</td>
-											<td className="p-4 align-middle text-right">
-												<div className="flex justify-end gap-2">
-													<Link
-														href={`${API_URL}/${post.slug}`}
-														target="_blank"
-													>
-														<Button
-															variant="outline"
-															size="icon"
-															className="h-8 w-8"
-														>
-															<Eye className="h-4 w-4" />
-														</Button>
-													</Link>
-													<Link href={`/dashboard/posts/${post.id}`}>
-														<Button
-															variant="outline"
-															size="icon"
-															className="h-8 w-8"
-														>
-															<Edit className="h-4 w-4" />
-														</Button>
-													</Link>
-													<Button
-														variant="destructive"
-														size="icon"
-														className="h-8 w-8"
-														onClick={() => handleDelete(post.id)}
-													>
-														<Trash2 className="h-4 w-4" />
-													</Button>
-												</div>
-											</td>
-										</tr>
-									))}
-								</tbody>
-							</table>
-						</div>
-					)}
-
-					{pagination.totalPages > 1 && (
-						<div className="flex items-center justify-end space-x-2 py-4">
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => setPage((p) => Math.max(1, p - 1))}
-								disabled={page === 1}
-							>
-								<ChevronLeft className="h-4 w-4 mr-1" /> Previous
-							</Button>
-							<div className="text-sm text-muted-foreground">
-								Page {pagination.page} / {pagination.totalPages}
+			{loading ? (
+				<LoadingSpinner text="Loading Posts..." />
+			) : (
+				<Card>
+					<CardHeader className="pb-3">
+						<div className="flex items-center justify-between">
+							<CardTitle>Post List</CardTitle>
+							<div className="relative w-full max-w-sm">
+								<Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+								<Input
+									type="search"
+									placeholder="Search by title..."
+									className="pl-8"
+									value={search}
+									onChange={(e) => {
+										setSearch(e.target.value);
+										setPage(1);
+									}}
+								/>
 							</div>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() =>
-									setPage((p) => Math.min(pagination.totalPages, p + 1))
-								}
-								disabled={page === pagination.totalPages}
-							>
-								Next <ChevronRight className="h-4 w-4 ml-1" />
-							</Button>
 						</div>
-					)}
-				</CardContent>
-			</Card>
+					</CardHeader>
+					<CardContent>
+						{posts.length === 0 ? (
+							<div className="text-center py-10 text-muted-foreground">
+								{search
+									? "No posts found matching your criteria."
+									: "No posts added yet."}
+							</div>
+						) : (
+							<div className="relative w-full overflow-auto">
+								<table className="w-full caption-bottom text-sm text-left">
+									<thead className="[&_tr]:border-b">
+										<tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+											<th className="h-12 px-4 align-middle font-medium text-muted-foreground">
+												Title
+											</th>
+											<th className="h-12 px-4 align-middle font-medium text-muted-foreground">
+												Status
+											</th>
+											<th className="h-12 px-4 align-middle font-medium text-muted-foreground">
+												Date
+											</th>
+											<th className="h-12 px-4 align-middle font-medium text-muted-foreground text-right">
+												Actions
+											</th>
+										</tr>
+									</thead>
+									<tbody className="[&_tr:last-child]:border-0">
+										{posts.map((post) => (
+											<tr
+												key={post.id}
+												className="border-b transition-colors hover:bg-muted/50"
+											>
+												<td className="p-4 align-middle font-medium">
+													<div className="flex flex-col">
+														<span>{post.title}</span>
+														<span className="text-xs text-muted-foreground font-normal">
+															/{post.slug}
+														</span>
+													</div>
+												</td>
+												<td className="p-4 align-middle">
+													{post.published ? (
+														<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+															<CheckCircle className="w-3 h-3 mr-1" /> Published
+														</span>
+													) : (
+														<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
+															<XCircle className="w-3 h-3 mr-1" /> Draft
+														</span>
+													)}
+												</td>
+												<td className="p-4 align-middle">
+													{new Date(post.createdAt).toLocaleDateString("en-US")}
+												</td>
+												<td className="p-4 align-middle text-right">
+													<div className="flex justify-end gap-2">
+														<Link
+															href={`${API_URL}/${post.slug}`}
+															target="_blank"
+														>
+															<Button
+																variant="outline"
+																size="icon"
+																className="h-8 w-8"
+															>
+																<Eye className="h-4 w-4" />
+															</Button>
+														</Link>
+														<Link href={`/dashboard/posts/${post.id}`}>
+															<Button
+																variant="outline"
+																size="icon"
+																className="h-8 w-8"
+															>
+																<Edit className="h-4 w-4" />
+															</Button>
+														</Link>
+														<Button
+															variant="destructive"
+															size="icon"
+															className="h-8 w-8"
+															onClick={() => handleDelete(post.id)}
+														>
+															<Trash2 className="h-4 w-4" />
+														</Button>
+													</div>
+												</td>
+											</tr>
+										))}
+									</tbody>
+								</table>
+							</div>
+						)}
+
+						{pagination.totalPages > 1 && (
+							<div className="flex items-center justify-end space-x-2 py-4">
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => setPage((p) => Math.max(1, p - 1))}
+									disabled={page === 1}
+								>
+									<ChevronLeft className="h-4 w-4 mr-1" /> Previous
+								</Button>
+								<div className="text-sm text-muted-foreground">
+									Page {pagination.page} / {pagination.totalPages}
+								</div>
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() =>
+										setPage((p) => Math.min(pagination.totalPages, p + 1))
+									}
+									disabled={page === pagination.totalPages}
+								>
+									Next <ChevronRight className="h-4 w-4 ml-1" />
+								</Button>
+							</div>
+						)}
+					</CardContent>
+				</Card>
+			)}
 		</div>
 	);
 }

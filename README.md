@@ -1,104 +1,89 @@
-# SabitCMS: Custom Static Site Generator & Headless CMS
+# SabitCMS: A Custom Static Site Generation Architecture
 
-**SabitCMS**, is a full-stack content management system that combines the speed and security of **Static Site Generators (SSG)** with the ease of use of a user-friendly **Admin Dashboard**. Unlike traditional CMSs that query the database on every request, SabitCMS builds static HTML files, ensuring lightning-fast performance and SEO optimization.
+**SabitCMS** is a full-stack architectural study designed to reverse-engineer the core concepts of Static Site Generators (SSG).
 
-## Why I Built This?
+Instead of relying on pre-built solutions like Next.js SSG or Gatsby for the rendering engine, I built a custom **Node.js-based build engine** from scratch. This project serves as a practical exploration of file system manipulation, caching strategies (ISR), and the decoupling of dynamic administration from static content delivery.
 
-As a developer, I love the performance of static sites (like Jekyll or Hugo), but managing content via Markdown files and CLI commands isn't user-friendly for non-technical clients. WordPress, on the other hand, is easy to use but can be bloated and slow.
+![Dashboard Architecture](screenshots/dashboard.png)
 
-**I wanted to bridge this gap.**
+## Engineering Motivation
 
-My goal was to build a system where:
+As a developer, I wanted to move beyond simply consuming frameworks and start understanding their internal mechanics. My primary goals for this project were:
 
-1. **Content Managers** get a rich text editor and a dashboard.
-2. **Developers** get full control over HTML templates via code.
-3. **End Users** get the speed of raw HTML/CSS.
+1.  **Understanding SSG Internals:** How does a raw database record become a static HTML file efficiently?
+2.  **Performance Optimization:** Implementing an "Incremental Static Regeneration" (ISR) logic manually to avoid full-site rebuilds.
+3.  **System Architecture:** Designing a secure separation between the Admin Dashboard (Dynamic/Protected) and the Public Site (Static/Public).
+4.  **Problem Solving:** Overcoming real-world integration challenges, such as dependency conflicts in rich-text editors and implementing live previews for server-side templates.
 
-This project taught me how **Static Site Generation engines work under the hood**, how to handle file systems in Node.js, and how to build a complex full-stack architecture.
+## Architecture & Design Decisions
 
-## Key Features
+### 1. The Custom Build Engine (Backend)
+The core of SabitCMS is not just a CRUD API, but a compilation engine.
+* **Logic:** It utilizes **LiquidJS** to parse dynamic templates stored in the database.
+* **Performance:** Instead of querying the database on every request, the engine compiles content into static HTML files stored in the `dist/` directory.
+* **ISR Implementation:** When a post is updated, the system identifies the specific file associated with that slug and rebuilds only that file. This drastically reduces server load compared to traditional CMSs.
 
-* **Custom SSG Engine:** Converts database content into static HTML files using **LiquidJS** templating.
-* **ISR-like Caching Strategy:** Implements an "Incremental Static Regeneration" logic. When a post is updated, only the specific HTML file is deleted and rebuilt on the next request, rather than rebuilding the entire site.
-* **Setup Wizard:** A WordPress-style installation flow. It detects if the system is unconfigured and guides the user to create an admin account and default templates.
-* **Advanced Post Editor:**
-* **WYSIWYG Editing:** Integrated **TipTap** for a rich text experience.
-* **Image Management:** Drag & drop image uploading, resizing, and alignment.
+### 2. The Split-Stack Approach
+I chose to separate the concerns completely:
+* **Admin Panel (Next.js 16):** A highly interactive, client-side heavy React application for content management.
+* **Public Serving (Express/Node.js):** A lightweight static file server that serves pre-built HTML with zero database latency for end-users.
 
+## Key Implementation Details
 
-* **Built-in Code Editor:** Integrated **Monaco Editor (VS Code engine)** directly into the dashboard for editing HTML templates live in the browser.
-* **Dynamic Templates:** The system supports dynamic LiquidJS templates stored in the database, allowing layout changes without redeploying the code.
-* **Media Library:** Custom upload system using `Multer` with auto-sync to the build folder.
+### Live Template Compilation
+One of the biggest challenges was allowing users to edit HTML/Liquid templates and see changes without a full build.
+* **Solution:** I implemented a `POST /preview` endpoint that accepts raw template strings, compiles them in-memory with dummy data, and returns the HTML.
+* **Safety:** The preview is rendered within a sandboxed `iframe` with script injection to prevent navigation events, ensuring a smooth developer experience (DX).
+
+![Template Editor with Split View](screenshots/template-editor.png)
+
+### Advanced Rich Text Handling
+Integrating a WYSIWYG editor (TipTap) required handling complex state management and asset handling.
+* **Challenge:** Managing image uploads and resizing within the editor content.
+* **Solution:** I implemented a custom TipTap extension to handle drag-and-drop uploads, interacting with a local `Multer` based file upload system.
+
+![Post Editor Interface](screenshots/post-editor.png)
+
+### Content Management & Taxonomy
+The dashboard provides a structured interface for managing content, enforcing type safety with TypeScript interfaces across the frontend and backend.
+
+![Posts Management](screenshots/posts.png)
+
+### Asset Management System
+Instead of relying on third-party cloud storage, I built a local file management system to understand stream handling and file operations in Node.js.
+
+![Media Library](screenshots/media.png)
 
 ## Tech Stack
 
-### Backend (The Engine)
+* **Runtime:** Node.js
+* **Frameworks:** Next.js 16 (App Router), Express.js
+* **Database:** PostgreSQL (via Prisma ORM)
+* **Templating:** LiquidJS
+* **UI/Styling:** Tailwind CSS, Shadcn UI
+* **Editor:** TipTap, Monaco Editor
 
-* **Node.js & Express:** Core server and API handling.
-* **Prisma ORM:** Database management (SQLite/PostgreSQL).
-* **LiquidJS:** Template engine for compiling HTML.
-* **Multer & FS-Extra:** File system operations and media handling.
-* **Bcrypt & JWT:** Secure authentication and authorization.
+## Installation
 
-### Frontend (The Dashboard)
+1.  **Clone the repository**
+    ```bash
+    git clone [https://github.com/ktezin/sabit.git](https://github.com/ktezin/sabit.git)
+    ```
 
-* **Next.js 14 (App Router):** The React framework for the admin panel.
-* **TypeScript:** Type safety across the entire application.
-* **Tailwind CSS & Shadcn UI:** Modern and responsive UI components.
-* **TipTap:** Headless rich text editor framework.
-* **Monaco Editor:** Code editor for template management.
-* **Zod:** Schema validation for API requests.
+2.  **Setup Backend**
+    ```bash
+    cd backend
+    npm install
+    npx prisma db push
+    npm run dev
+    ```
 
-## Architecture & Workflow
+3.  **Setup Frontend**
+    ```bash
+    cd admin
+    npm install
+    npm run dev
+    ```
 
-1. **Content Creation:** The user writes a post in the Next.js Admin Panel. Images are uploaded to the backend via API.
-2. **Data Storage:** Content is stored in the database (PostgreSQL/SQLite) via Prisma.
-3. **The Request (Public Side):** When a visitor requests a page (e.g., `/hello-world`):
-* The backend checks if `dist/hello-world.html` exists.
-* **Cache Hit:** If yes, it serves the static file immediately (0ms DB latency).
-* **Cache Miss:** If no, the **Build Service** fetches data from DB, compiles the Liquid template, generates the HTML, saves it to disk, and serves it.
-
-
-4. **Invalidation:** When a post is updated in the Admin Panel, the specific static file is deleted to force a re-build on the next visit.
-
-## Getting Started
-
-### Prerequisites
-
-* Node.js (v18+)
-* npm or yarn
-
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/ktezin/sabit.git
-cd sabit
-```
-
-2. **Setup Backend**
-```bash
-cd backend
-npm install
-npx prisma db push
-npm run dev
-```
-
-3. **Setup Frontend**
-```bash
-cd admin
-npm install
-npm run dev
-```
-
-4. **Run the Wizard**
-Go to `http://localhost:3000` (Backend) or `http://localhost:3001` (Frontend). You will be automatically redirected to the **Setup Page** to create your admin account.
-
-## What I Learned
-
-Building SabitCMS was a deep dive into full-stack development. Key takeaways included:
-
-* **System Design:** Designing a system that separates the "Admin" (Dynamic) from the "Public Site" (Static).
-* **File System Manipulation:** Learning to safely read, write, and delete files programmatically in Node.js to mimic SSG behavior.
-* **Middleware Patterns:** implementing robust middleware in Next.js for route protection and installation checks.
-* **Rich Text Complexity:** Handling image uploads within a text editor and rendering them correctly was a significant challenge solved by customizing TipTap extensions.
+4.  **Initialization**
+    Navigate to `http://localhost:3001`. The system detects a fresh install and redirects to the **Setup Wizard** to configure the initial admin account.

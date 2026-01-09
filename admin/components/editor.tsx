@@ -2,7 +2,6 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { ImagePlus } from "tiptap-image-plus";
 import {
 	Bold,
 	Italic,
@@ -15,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ImageUploader } from "@/components/image-uploader";
+import ImageResize from 'tiptap-extension-resize-image';
 
 interface EditorProps {
 	value: string;
@@ -25,10 +25,8 @@ export default function Editor({ value, onChange }: EditorProps) {
 	const editor = useEditor({
 		extensions: [
 			StarterKit,
-			ImagePlus.configure({
-				// Optional: custom options
-				wrapperStyle: {},
-				containerStyle: {},
+			ImageResize.configure({
+				inline: true,
 			}),
 		],
 		immediatelyRender: false,

@@ -9,6 +9,7 @@ import {
 	Settings,
 	LogOut,
 	Menu,
+	Image,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +22,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+type User = {
+	id: string;
+	email: string;
+	createdAt: string;
+};
+
 export default function DashboardLayout({
 	children,
 }: {
@@ -29,12 +36,16 @@ export default function DashboardLayout({
 	const router = useRouter();
 	const pathname = usePathname();
 	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+	const [user, setUser] = useState<User>({ id: "", email: "", createdAt: "" });
 
 	useEffect(() => {
 		const token = localStorage.getItem("token");
-		if (!token) {
+		const user = localStorage.getItem("user");
+		if (!token || !user) {
 			router.push("/login");
+			return;
 		}
+		setUser(JSON.parse(user));
 	}, [router]);
 
 	const handleLogout = () => {
@@ -46,6 +57,7 @@ export default function DashboardLayout({
 	const navItems = [
 		{ name: "Overview", href: "/dashboard", icon: LayoutDashboard },
 		{ name: "Posts", href: "/dashboard/posts", icon: FileText },
+		{ name: "Media", href: "/dashboard/media", icon: Image },
 		{ name: "Settings", href: "/dashboard/settings", icon: Settings },
 	];
 
@@ -130,7 +142,7 @@ export default function DashboardLayout({
 									<div className="flex flex-col space-y-1">
 										<p className="text-sm font-medium leading-none">Admin</p>
 										<p className="text-xs leading-none text-muted-foreground">
-											admin@sabit.com
+											{user.email}
 										</p>
 									</div>
 								</DropdownMenuLabel>

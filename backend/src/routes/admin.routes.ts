@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+	getDashboardStats,
 	getSettings,
 	getTemplates,
 	triggerBuild,
@@ -47,5 +48,9 @@ router.post(
 	uploadController.upload.single("image"),
 	uploadController.uploadImage
 );
+router.get("/uploads", uploadController.getFiles);
+router.delete("/uploads/:filename", uploadController.deleteFile);
+
+router.get("/dashboard", getDashboardStats);
 
 export default router;

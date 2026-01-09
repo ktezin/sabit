@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import path from "path";
-import fs from "fs/promises";
+import fsPromises from "fs/promises";
 import prisma from "../config/db";
 import { AppError } from "../utils/AppError";
 import { catchAsync } from "../utils/catchAsync";
@@ -35,7 +35,7 @@ export const updateTemplate = catchAsync(
 
 		if (templateType === "index") {
 			const filePath = path.join(process.cwd(), "dist", "index.html");
-			await fs
+			await fsPromises
 				.unlink(filePath)
 				.catch(() => console.log("Cache file not found, skipping delete."));
 		}
@@ -94,6 +94,40 @@ export const updateSettings = catchAsync(
 		res.status(200).json({
 			status: "success",
 			data: settings,
+		});
+	}
+);
+
+export const getDashboardStats = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const [totalPosts, publishedPosts, draftPosts, recentPosts] =
+			await prisma.$transaction([
+				prisma.post.count(),
+				prisma.post.count({ where: { published: true } }),
+				prisma.post.count({ where: { published: false } }),
+				prisma.post.findMany({
+					take: 5,
+					orderBy: { updatedAt: "desc" },
+					select: {
+						id: true,
+						title: true,
+						slug: true,
+						published: true,
+						updatedAt: true,
+					},
+				}),
+			]);
+
+		res.status(200).json({
+			status: "success",
+			data: {
+				counts: {
+					total: totalPosts,
+					published: publishedPosts,
+					draft: draftPosts,
+				},
+				recentPosts,
+			},
 		});
 	}
 );

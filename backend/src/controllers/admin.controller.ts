@@ -48,6 +48,61 @@ export const updateTemplate = catchAsync(
 	}
 );
 
+export const previewTemplate = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const { content, type } = req.body;
+
+		const settings = await prisma.settings.findFirst();
+		const globalData = {
+			siteName: settings?.siteTitle || "Preview Site",
+			siteDescription: settings?.siteDescription || "Description",
+			footerText: settings?.footerText || "Footer Text",
+		};
+
+		let renderData: Record<string, any> = { ...globalData };
+
+		if (type === "index") {
+			const posts = await prisma.post.findMany({
+				take: 3,
+				where: { published: true },
+				orderBy: { createdAt: "desc" },
+			});
+			renderData = { ...renderData, posts };
+		} else if (type === "post") {
+			const post = await prisma.post.findFirst({
+				where: { published: true },
+			});
+
+			renderData = {
+				...renderData,
+				post: post || {
+					title: "Example Post Title",
+					content:
+						"<p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Reprehenderit doloribus rem nisi aspernatur dolorum fugit placeat! Iure inventore quisquam atque est velit deserunt molestiae voluptates, incidunt pariatur dolorum aliquid adipisci?</p>",
+					createdAt: new Date(),
+					slug: "example-post",
+				},
+			};
+		}
+
+		try {
+			const html = await buildService
+				.getEngine()
+				.parseAndRender(content, renderData);
+
+			res.status(200).json({
+				status: "success",
+				html: html,
+			});
+		} catch (error: any) {
+			res.status(400).json({
+				status: "error",
+				message: "Template Error: " + error.message,
+			});
+		}
+	}
+);
+
 export const triggerBuild = catchAsync(
 	async (req: Request, res: Response, next: NextFunction) => {
 		const result = await buildService.buildAll();

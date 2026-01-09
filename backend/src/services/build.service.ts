@@ -74,4 +74,8 @@ export class BuildService {
 
 		return { status: "success", pageCount: 1 + posts.length };
 	}
+
+	getEngine() {
+		return this.engine;
+	}
 }

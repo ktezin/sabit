@@ -3,6 +3,7 @@ import {
 	getDashboardStats,
 	getSettings,
 	getTemplates,
+	previewTemplate,
 	triggerBuild,
 	updateSettings,
 	updateTemplate,
@@ -37,6 +38,7 @@ router.put(
 	updateTemplate
 );
 router.get("/templates", getTemplates);
+router.post("/templates/preview", previewTemplate);
 
 router.get("/settings", getSettings);
 router.put("/settings", updateSettings);

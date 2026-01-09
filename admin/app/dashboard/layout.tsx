@@ -100,7 +100,7 @@ export default function DashboardLayout({
 				<div className="p-4 border-t">
 					<Button
 						variant="ghost"
-						className="w-full flex items-center gap-3 justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
+						className="w-full flex items-center gap-3 justify-start  hover:text-red-600 hover:bg-red-50"
 						onClick={handleLogout}
 					>
 						<LogOut size={20} />

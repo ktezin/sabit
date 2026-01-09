@@ -14,6 +14,8 @@ export async function middleware(request: NextRequest) {
 		return NextResponse.next();
 	}
 
+	// Setup
+
 	try {
 		const res = await fetch(`${API_URL}/api/setup/status`, {
 			cache: "no-store",
@@ -45,6 +47,21 @@ export async function middleware(request: NextRequest) {
 		if (path !== "/setup") {
 			return NextResponse.redirect(new URL("/setup", request.url));
 		}
+	}
+
+	// Auth
+	const token = request.cookies.get("token")?.value;
+
+	if (path.startsWith("/dashboard") && !token) {
+		return NextResponse.redirect(new URL("/login", request.url));
+	}
+
+	if (path === "/login" && token) {
+		return NextResponse.redirect(new URL("/dashboard", request.url));
+	}
+
+	if (path === "/") {
+		return NextResponse.redirect(new URL("/dashboard", request.url));
 	}
 
 	return NextResponse.next();

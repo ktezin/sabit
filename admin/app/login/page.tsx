@@ -44,6 +44,8 @@ export default function LoginPage() {
 			localStorage.setItem("token", data.token);
 			localStorage.setItem("user", JSON.stringify(data.data.user));
 
+			document.cookie = `token=${data.token}; path=/; max-age=86400; SameSite=Strict`;
+
 			router.push("/dashboard");
 		} catch (err: any) {
 			setError(err.message);
